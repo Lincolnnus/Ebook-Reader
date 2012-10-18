@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>PDF.js viewer</title>
+    <!-- PDFJSSCRIPT_INCLUDE_FIREFOX_EXTENSION -->
+
+    <link rel="stylesheet" href="css/viewer.css"/>
+    <link rel="stylesheet" href="css/annotools.css"/>
+
+    <script type="text/javascript" src="js/compatibility.js"></script> <!-- PDFJSSCRIPT_REMOVE_FIREFOX_EXTENSION -->
+
+<!-- This snippet is used in production, see Makefile -->
+<link rel="resource" type="application/l10n" href="locale.properties"/>
+<style type="text/css">
+	#footer{
+	  position: fixed;
+	  width:100%;
+	  height:30px;
+	  bottom: 30px;
+          left:0;
+	  z-index:100;
+	}
+	#socialController{
+	  position:absolute;
+	  top:20%;
+	  height:70%;
+	  z-index:50;
+	}
+	#social{
+	  position:absolute;
+	  top:50%;
+	  z-index:50;	
+	}
+	#toolController{
+	  position:absolute;
+	  width:47%;
+	  left:33%;
+	}
+	#mine {
+	  margin: 0 50px 0 0;
+	  width:100%;
+	  padding: 0;
+	  float: left;
+	}
+
+	li {
+	  display: block;
+	  margin: 0;
+	  padding: 4px;
+	  width: 80%;
+	  background-color: #333;
+	  color: #888;
+	}
+	#commentController{
+	  position:absolute;
+	  width:20%;
+	  right:20px;
+	  z-index:50;
+	  bottom:0;
+	}
+	#arrow{
+	float:right;
+	}
+	.annotLayer {
+	  position: absolute;
+	  left: 0;
+	  top: 0;
+	  right: 0;
+	  bottom: 0;
+	  color: #000;
+	  z-index:5;
+	}
+</style>
+<script type="text/javascript" src="js/l10n.js"></script>
+<script type="text/javascript" src="js/pdf.js"></script>
+<script type="text/javascript">
+  // This specifies the location of the pdf.js file.
+  PDFJS.workerSrc = "js/pdf.js";
+</script>
+    <script type="text/javascript" src="js/debugger.js"></script>
+    <script type="text/javascript" src="js/viewer.js"></script>
+    <script type="text/javascript" src="js/mootools-core.js"></script>
+    <script type="text/javascript" src="js/mootools-more.js"></script>
+    <script type="text/javascript" src="js/annotools.js"></script>
+    <script type="text/javascript">
+	var bid;
+	var annots=new Array();
+	var friendAnnots=new Array();
+	function getSelected() {
+   	 if(window.getSelection) { return window.getSelection().toString (); }
+         else if(document.getSelection) { return document.getSelection().toString (); }
+                    else {
+                            var selection = document.selection && document.selection.createRange();
+                            if(selection.text) { return selection.text; }
+                return false;
+            }
+            return false;
+        }
+	function getAnnot()
+	{
+		var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				    annots=e;
+					friendAnnots[0]=annots[0];
+					friendAnnots[1]=annots[1];
+					friendAnnots[0].picture="http://graph.facebook.com/25813592/picture";
+					friendAnnots[0].name="Keith";
+					friendAnnots[1].picture="http://graph.facebook.com/28806505/picture";
+					friendAnnots[1].name="Kiki";
+				}}).get({'bid': bid});
+	}
+	var annotPage=null;
+        function displayAnnot(currentPage)
+	{	
+		if(annotPage!=currentPage)
+		{	
+			var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+			var thisCanvas=$("annotCanvas"+currentPage);
+			var canvasWidth=thisCanvas.width;
+			var canvasHeight=thisCanvas.height;
+			var ctx=thisCanvas.getContext("2d");
+			ctx.clearRect(0,0,canvasWidth,canvasHeight);
+					    annots=e;
+					for(var i=0;i<annots.length;i++)
+					{
+						var startx=parseInt(annots[i].startx*canvasWidth),starty=parseInt(annots[i].starty*canvasHeight),width=Math.abs(parseInt(annots[i].width*canvasWidth)),height=Math.abs(parseInt(annots[i].height*canvasHeight));
+						switch(annots[i].type)
+						{
+							case 'rect':
+							ctx.globalAlpha = 0.3;
+							ctx.fillStyle=annots[i].color;
+							ctx.fillRect(startx,starty,width,height);
+							break;
+							case 'pencil':
+							  var points=annots[i].points;
+							  var poly=String.split(points,';');
+							  var point,px,py;
+							  ctx.beginPath();
+							  for (var k=0;k<poly.length;k++)
+							  {
+							     var p=String.split(poly[k],' ');      
+							     for (var j=0;j<p.length;j++)
+							     {
+								  point=String.split(p[j],',');
+								  px=point[0]*canvasWidth;
+								  py=point[1]*canvasHeight;
+								  if(j==0) ctx.moveTo(px, py);
+							 	  else ctx.lineTo(px, py);
+								  ctx.strokeStyle = annots[i].color;
+								  ctx.stroke();
+							     }
+							  }
+							break;
+							case 'text':
+							ctx.globalAlpha = 0.3;
+							ctx.fillStyle=annots[i].color;
+							ctx.fillRect(startx,starty,width,height);
+							break;
+						}
+					}
+					}}).get({'bid': bid,'pid':currentPage});
+			annotPage=currentPage;
+		}else {
+			var thisCanvas=$("annotCanvas"+currentPage);
+			var canvasWidth=thisCanvas.width;
+			var canvasHeight=thisCanvas.height;
+			var ctx=thisCanvas.getContext("2d");
+			ctx.clearRect(0,0,canvasWidth,canvasHeight);
+			for(var i=0;i<annots.length;i++)
+			{
+				var startx=parseInt(annots[i].startx*canvasWidth),starty=parseInt(annots[i].starty*canvasHeight),width=Math.abs(parseInt(annots[i].width*canvasWidth)),height=Math.abs(parseInt(annots[i].height*canvasHeight));
+				switch(annots[i].type)
+				{
+					case 'rect':
+					ctx.globalAlpha = 0.3;
+					ctx.fillStyle=annots[i].color;
+					ctx.fillRect(startx,starty,width,height);
+					break;
+					case 'pencil':
+					  var points=annots[i].points;
+					  var poly=String.split(points,';');
+					  var point,px,py;
+					  var color=annots[i].color;
+					  ctx.beginPath();
+					  for (var k=0;k<poly.length;k++)
+					  {
+					     var p=String.split(poly[k],' ');      
+					     for (var j=0;j<p.length;j++)
+					     {
+						  point=String.split(p[j],',');
+						  px=point[0]*canvasWidth;
+						  py=point[1]*canvasHeight;
+						  if(j==0) ctx.moveTo(px, py);
+					 	  else ctx.lineTo(px, py);
+						  ctx.strokeStyle = color;
+						  ctx.stroke();
+					     }
+					  }
+					break;
+					case 'text':
+					ctx.globalAlpha = 0.3;
+					ctx.fillStyle=annots[i].color;
+					ctx.fillRect(startx,starty,width,height);
+					break;
+				}
+			}
+		}
+	}
+	function shareText(annot,pageY){
+		var currentPage=PDFView.page;
+		var thisCanvas=$("annotCanvas"+currentPage);
+		var canvasWidth=thisCanvas.width;
+		var canvasHeight=thisCanvas.height;
+		bottom=document.body.offsetHeight-pageY-$('commentController').offsetHeight;
+		var currentBottom=$('commentController').getStyle('bottom');
+		if (currentBottom!=bottom)
+		{
+			$('commentController').tween('bottom', [currentBottom, bottom]);
+			$('commentController').setStyle('background-color', 'white');
+		}
+		$('arrow').set('html','close');
+		$('comment').set('html',annot.text+'<br><textarea id="text" rows="4" placeholder="Add Comments"></textarea><br><br><select id="access"><option value="public">Public</option><option value="friends">Friends</option><option value="me">Only Me</option></select><button id="save">Save</button>');
+		$('save').addEvent('click', function(){
+				var text=$('text').value;
+				var access=$('access').value;
+				var uid=1,token='abc',pid=PDFView.page;
+				annot.bid=bid;
+				annot.pid=pid;
+				annot.startx=annot.startx/canvasWidth;
+				annot.starty=annot.starty/canvasHeight;
+				annot.width=annot.width/canvasWidth;
+				annot.height=annot.height/canvasHeight;
+				annot.access=access;
+				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				    $('comment').set('html','');
+				    $('arrow').set('html','');
+				    $('commentController').setStyle('background-color', '');
+				    annots.push(annot); 
+				    displayAnnot(pid);
+				}}).post({'uid': uid, 'token': token,'annot':annot});
+
+		});
+	}
+
+	window.addEvent('domready', function() {
+	$("toolController").hide();
+	$("download").addEvent('click',function(){displayAnnot();});
+	$("footer").addEvent('mouseenter',function(){$("toolController").show();});
+	$("footer").addEvent('mouseleave',function(){$("toolController").hide();});
+	$("rect").addEvent('click',function(){drawShape('rect');});
+	$("pencil").addEvent('click',function(){drawShape('pencil');});
+	$("color").addEvent('click',function(){pickcolor();});
+	$('arrow').addEvent('click',function(){
+		this.set('html','');
+		$('commentController').setStyle('background-color', '');
+		$('comment').set('html','');
+		displayAnnot(PDFView.page);
+	});
+	$("social").addEvent('mouseover',function(){
+		var currentWidth=$('socialController').getStyle('width');
+		if(currentWidth=='100px')
+		{
+			$('socialController').tween('width', ['100px', 0]);
+			$('social').tween('left', [90, 0]);
+			//$('socialController').setStyle('background-color', '');
+			$('allAnnots').set('html','');
+		}else{	$('socialController').tween('width', [0, '100px']);
+			$('social').tween('left', [0, 90]);
+			$('socialController').setStyle('background-color', 'white');
+			displayAllAnnot();
+		}
+		});
+	});
+	var color="blue";
+	function editAnnot(id)
+	{
+		var annot=annots[id];
+		var thisPage=PDFView.page;
+		var page=$("page"+thisPage);
+		var canvasHeight=page.height;
+		var bottom=document.body.offsetHeight-canvasHeight*annot.starty-canvasHeight*annot.height-$("commentController").offsetHeight;
+		var currentBottom=$('commentController').getStyle('bottom');
+		if (currentBottom!=bottom)
+		{
+			$('commentController').tween('bottom', [currentBottom, bottom]);
+			$('commentController').setStyle('background-color', 'white');
+		}
+		$('arrow').set('html','close');
+		$('comment').set('html','<textarea id="text" rows="4">'+annot.text+'</textarea><br><select id="access"><option value="'+annot.access+'">'+annot.access+'</option><option value="public">Public</option><option value="friends">Friends</option><option value="me">Only Me</option></select><button id="save">Save Change</button><button id="delete">Delete</delete>');
+		$('save').addEvent('click', function(){
+				var text=$('text').value;
+				var access=$('access').value;
+				var uid=1,token='abc',pid=PDFView.page;
+				annot.text=text;
+				annot.access=access;
+				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				    $('comment').set('html','');
+				    $('arrow').set('html','');
+				    $('commentController').setStyle('background-color', '');
+				    annots[i]=annot; 
+				    displayAnnot(pid);
+				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'update'});
+
+		});
+		$('delete').addEvent('click', function(){
+				var text=$('text').value;
+				var access=$('access').value;
+				var uid=1,token='abc',pid=PDFView.page;
+				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				    $('comment').set('html','');
+				    $('arrow').set('html','');
+				    $('commentController').setStyle('background-color', '');
+				    annots.splice(id,1);
+				    displayAnnot(pid);
+				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'delete'});
+
+		});
+	}
+	function showMine()
+	{
+		document.getElements(".annotList").destroy();
+		for(var i=0;i<annots.length;i++)
+		{
+			var list=new Element('li',{id:i,'class':'annotList',html:">"+annots[i].text.substring(0,9)}).inject($("mine"));
+			list.addEvent('click',function(){editAnnot(this.id);});
+			list.set('morph', {duration: 200});
+			list.addEvents({
+			    mouseenter: function(){
+			      // this refers to the element in an event
+			      this.morph({
+				'background-color': '#666',
+				'color': '#FF8',
+				'margin-left': 5
+			      });
+			      showThisAnnot(this.id);
+			      highlight(this.id);
+			    },
+			    mouseleave: function(){
+			      // this refers to the element in an event
+			      this.morph({
+				'background-color': '#333',
+				'color': '#888',
+				'margin-left': 0
+			      });
+			    }
+			});
+
+		}
+	}
+	function showFriendAnnots(friendDiv)
+	{
+		document.getElements(".annotList").destroy();
+		for(var i=0;i<friendAnnots.length;i++)
+		{
+			var list=new Element('li',{id:i,'class':'annotList',html:">"+friendAnnots[i].text.substring(0,9)}).inject(friendDiv);
+			list.set('morph', {duration: 200});
+			list.addEvents({
+			    mouseenter: function(){
+			      // this refers to the element in an event
+			      this.morph({
+				'background-color': '#666',
+				'color': '#FF8',
+				'margin-left': 5
+			      });
+			      showThisAnnot(this.id);
+			      highlight(this.id);
+			    },
+			    mouseleave: function(){
+			      // this refers to the element in an event
+			      this.morph({
+				'background-color': '#333',
+				'color': '#888',
+				'margin-left': 0
+			      });
+			    }
+			});
+
+		}
+	}
+	function highlight(id)	
+	{
+		var annot=annots[id];
+		var thisPage=PDFView.page;
+		var page=$("page"+thisPage);
+		var canvasWidth=page.width;
+		var canvasHeight=page.height;
+		var thisCanvas=$("annotCanvas"+thisPage);
+		var ctx=thisCanvas.getContext("2d");
+		ctx.clearRect(0,0,canvasWidth,canvasHeight);
+		var startx=parseInt(annot.startx*canvasWidth),starty=parseInt(annot.starty*canvasHeight),width=Math.abs(parseInt(annot.width*canvasWidth)),height=Math.abs(parseInt(annot.height*canvasHeight));
+		switch(annot.type)
+		{
+			case 'rect':
+			ctx.globalAlpha = 0.3;
+			ctx.fillStyle=annot.color;
+			ctx.fillRect(startx,starty,width,height);
+			break;
+			case 'pencil':
+			  var points=annot.points;
+			  var poly=String.split(points,';');
+			  var point,px,py;
+			  ctx.beginPath();
+			  for (var k=0;k<poly.length;k++)
+			  {
+			     var p=String.split(poly[k],' ');      
+			     for (var j=0;j<p.length;j++)
+			     {
+				  point=String.split(p[j],',');
+				  px=point[0]*canvasWidth;
+				  py=point[1]*canvasHeight;
+				  if(j==0) ctx.moveTo(px, py);
+			 	  else ctx.lineTo(px, py);
+				  ctx.strokeStyle = annot.color;
+				  ctx.stroke();
+			     }
+			  }
+			break;
+			case 'text':
+			ctx.globalAlpha = 0.3;
+			ctx.fillStyle=annot.color;
+			ctx.fillRect(startx,starty,width,height);
+			break;
+		}
+	}
+	function showThisAnnot(id)
+	{
+		var annot=annots[id];
+		var thisPage=PDFView.page;
+		var page=$("page"+thisPage);
+		var canvasHeight=page.height;
+		var bottom=document.body.offsetHeight-canvasHeight*annot.starty-canvasHeight*annot.height-$("commentController").offsetHeight;
+		var currentBottom=$('commentController').getStyle('bottom');
+		if (currentBottom!=bottom)
+		{
+			$('commentController').tween('bottom', [currentBottom, bottom]);
+			$('commentController').setStyle('background-color', 'white');
+		}
+		$('arrow').set('html','close');
+		$('comment').set('html',annot['text']+'<br><textarea id="text" placeholder="Comments?" rows="4"></textarea><br><button id="save">Save</button>');
+		$('save').addEvent('click', function(){
+				var text=$('text').value;
+				var access=$('access').value;
+				var uid=1,token='abc',pid=PDFView.page;
+				annot.text=text;
+				annot.bid=bid;
+				annot.pid=pid;
+				annot.access=access;
+				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/comment.php', onSuccess: function(e){
+				    $('comment').set('html','');
+				    $('arrow').set('html','');
+				    $('commentController').setStyle('background-color', '');
+				    annots.push(annot); 
+				    displayAnnot(pid);
+				}}).post({'uid': uid, 'token': token,'annot':annot});
+
+		});
+	}
+	function showFriends()
+	{
+		var clicked=false;
+		for(var i=0;i<friendAnnots.length;i++)
+		{
+			var newannot=new Element('ul',{'class':'friendList',html:'<img src="'+friendAnnots[i].picture+'" title="'+friendAnnots[i].name+'">'}).inject($("friend"));
+			newannot.addEvent('click',function(){if(clicked){document.getElements('.annotList').destroy();clicked=false;}else{showFriendAnnots(this);clicked=true;}});
+			
+		}
+	}
+	function showPublic()
+	{
+		for(var i=0;i<annots.length;i++)
+		{
+			var newannot=new Element('div',{'class':'annotindex',id:i,html:annots[i].aid}).inject($("public"));
+			newannot.addEvent('click',function(){console.log(annots[this.id]);alert(annots[this.id].text);});
+		}
+	}
+	var me=new Object();
+        me.name="Shaohuan Li";
+        me.picture="http://graph.facebook.com/1476261048/picture";
+	me.fbid="1476261048";
+	function displayAllAnnot()
+	{
+		var newannot=new Element('ul',{'class':'annotindex',id:"mine",html:'<img src="'+me.picture+'" title="'+me.name+'">'}).inject($('allAnnots'));
+		var clicked=false;
+			newannot.addEvent('click',function(){if(clicked){this.set("html",'<img src="'+me.picture+'" title="'+me.name+'">');clicked=false;}
+			else {showMine();clicked=true;}});
+		var newannot=new Element('div',{'class':'annotindex',id:"friend",html:"Friends"}).inject($('allAnnots'));
+			newannot.addEvent('mouseenter',function(){showFriends();});
+			newannot.addEvent('mouseleave',function(){this.set("html","Friends");});
+		var newannot=new Element('div',{'class':'annotindex',id:"public",html:"Public"}).inject($('allAnnots'));
+			newannot.addEvent('mouseenter',function(){showPublic();});
+			newannot.addEvent('mouseleave',function(){this.set("html","Public");});
+		
+	}
+        function pickcolor()
+	{
+		var toolController=$("toolController");
+		var colorContainer=new Element('div').inject(toolController);
+		var blackColor=new Element('img',{'class':'colorButton','title':'black',	
+					'styles':{'background-color':'black'},
+					'events':{'click':function(){color='black';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var redColor=new Element('img',{'class':'colorButton','title':'Default',
+					'styles':{'background-color':'red'},
+					'events':{'click':function(){color='red';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var blueColor=new Element('img',{'class':'colorButton','title':'blue',	
+					'styles':{'background-color':'blue'},
+					'events':{'click':function(){color='blue';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var greenColor=new Element('img',{'class':'colorButton','title':'lime',	
+					'styles':{'background-color':'lime'},
+					'events':{'click':function(){color='lime';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var purpleColor=new Element('img',{'class':'colorButton','title':'purple',	
+					'styles':{'background-color':'purple'},
+					'events':{'click':function(){color='purple';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var orangeColor=new Element('img',{'class':'colorButton','title':'orange',	
+					'styles':{'background-color':'orange'},
+					'events':{'click':function(){color='orange';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var yellowColor=new Element('img',{'class':'colorButton','title':'yellow',	
+					'styles':{'background-color':'yellow'},
+					'events':{ 'click':function(){color='yellow';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var pinkColor=new Element('img',{'class':'colorButton','title':'pink',	
+					'styles':{'background-color':'pink'},
+					'events':{'click':function(){color='pink';colorContainer.destroy();}
+						 }}).inject(colorContainer);
+		var colorButtons=document.getElements(".colorButton");
+		for(var i=0;i<colorButtons.length;i++){colorButtons[i].addEvents({'mouseenter':function(){this.addClass('selected')},'mouseleave':function(){this.removeClass('selected')}});}
+	}
+	function saveAnnot(annot,bottom)
+	{
+		var currentBottom=$('commentController').getStyle('bottom');
+		if (currentBottom!=bottom)
+		{
+			$('commentController').tween('bottom', [currentBottom, bottom]);
+			$('commentController').setStyle('background-color', 'white');
+		}
+		$('arrow').set('html','close');
+		$('comment').set('html','<textarea id="text" placeholder="Add Notes?" rows="4"></textarea><br><select id="access"><option value="public">Public</option><option value="friends">Friends</option><option value="me">Only Me</option></select><button id="save">Save</button>');
+		$('save').addEvent('click', function(){
+				var text=$('text').value;
+				var access=$('access').value;
+				var uid=1,token='abc',pid=PDFView.page;
+				annot.text=text;
+				annot.bid=bid;
+				annot.pid=pid;
+				annot.access=access;
+				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				    $('comment').set('html','');
+				    $('arrow').set('html','');
+				    $('commentController').setStyle('background-color', '');
+				    annots.push(annot); 
+				    displayAnnot(pid);
+				}}).post({'uid': uid, 'token': token,'annot':annot});
+
+		});
+	}
+        function drawShape(type)
+	{
+		var thisPage=PDFView.page;
+		var annotLayer=$("annotLayer"+thisPage);
+		var page=$("page"+thisPage);
+		var canvasWidth=page.width;
+		var canvasHeight=page.height;
+		var thisCanvas=$("annotCanvas"+thisPage);
+		var textLayer=$("textLayer"+thisPage);
+		var commentController=$("commentController");
+		thisCanvas.removeEvents('mouseup');
+		thisCanvas.removeEvents('mousedown');
+		thisCanvas.removeEvents('mousemove');
+		textLayer.hide();
+		var ctx=thisCanvas.getContext("2d");
+		ctx.clearRect(0,0,canvasWidth,canvasHeight);
+		switch (type)
+		{
+			case 'rect':
+				var startx,starty,started=false;
+				thisCanvas.addEvent('mousedown', function(e){
+					startx=e.event.layerX;
+					starty=e.event.layerY;
+					started=true;
+					ctx.beginPath();
+					ctx.globalAlpha = 0.3;
+				     });
+				thisCanvas.addEvent('mousemove', function(e){
+					if(started)
+					{
+						ctx.clearRect(0,0,canvasWidth,canvasHeight);
+						ctx.rect(startx,starty,e.event.layerX-startx,e.event.layerY-starty);
+						ctx.fillStyle = color;
+						ctx.fill();
+					}
+				     });
+		 		thisCanvas.addEvent('mouseup', function(e){
+					started=false;
+					textLayer.show();
+					var newAnnot= {startx:startx/canvasWidth,starty:starty/canvasHeight,width:(e.event.layerX-startx)/canvasWidth,height:(e.event.layerY-starty)/canvasHeight,type:'rect',color:color};
+					var bottom=document.body.offsetHeight-e.event.pageY-commentController.offsetHeight;
+					saveAnnot(newAnnot,bottom);
+				     });
+				break;
+			case 'pencil':
+			//Draw Pencil
+			     var started=false;
+				
+			     var pencil=[];//The Pencil Object
+			     var newpoly=[];//Every Stroke is treated as a Continous Polyline
+			     thisCanvas.addEvent('mousedown',function(e){ 
+				newpoly=[];//Clear the Stroke
+				started=true;
+				newpoly.push( {"x":e.event.layerX,"y":e.event.layerY});//The percentage will be saved
+				ctx.globalAlpha = 1;
+				ctx.beginPath();
+				ctx.moveTo(e.event.layerX, e.event.layerY);
+				ctx.strokeStyle = color;
+				ctx.stroke();
+			     });
+			     thisCanvas.addEvent('mousemove',function(e){ 
+			       if(started)
+			       {
+				     newpoly.push( {"x":e.event.layerX,"y":e.event.layerY});
+				     ctx.lineTo(e.event.layerX,e.event.layerY);
+				     ctx.stroke();
+				}
+			      });
+			     thisCanvas.addEvent('mouseup',function(e){ 
+				started=false;
+				pencil.push(newpoly);//Push the Stroke to the Pencil Object
+				newpoly=[];//Clear the Stroke
+				var x,y,w,h;
+				x=pencil[0][0].x;
+				y=pencil[0][0].y;
+				var maxdistance=0;//The Most Remote Point to Determine the Markup Size
+				var points="";
+				for (var i=0;i<pencil.length;i++)
+				{
+				    newpoly=pencil[i];
+				    for(j=0;j<newpoly.length;j++)
+				    {
+				   	 points+=newpoly[j].x/canvasWidth+','+newpoly[j].y/canvasHeight+' ';
+					 if ((newpoly[j].x+newpoly[j].y)>maxdistance)
+					 {
+					     maxdistance=newpoly[j].x+newpoly[j].y;
+					     w=Math.abs(newpoly[j].x-x)/canvasWidth;
+					     h=Math.abs(newpoly[j].y-y)/canvasHeight;
+					 }
+				    }
+				    points=points.slice(0, -1)
+				    points+=';';
+				} 
+ 				var newAnnot= {startx:x/canvasWidth,starty:y/canvasHeight,width:(e.event.layerX-x)/canvasWidth,height:(e.event.layerY-y)/canvasHeight,type:'pencil',points:points,color:color};
+				var bottom=document.body.offsetHeight-e.event.pageY-commentController.offsetHeight;
+				saveAnnot(newAnnot,bottom);
+			     });
+			break;
+		}
+	}
+	function editAnnotation()
+	{
+		var containerid="pageContainer"+PDFView.page;
+    		//annotool=new annotools('tool',{left:'40%',top:'90%',canvas:containerid});
+	}
+    </script>
+  </head>
+
+  <body>
+    <div id="outerContainer">
+
+      <div id="sidebarContainer">
+        <div id="toolbarSidebar" class="splitToolbarButton toggled">
+          <button id="viewThumbnail" class="toolbarButton group toggled" title="Show Thumbnails" onclick="PDFView.switchSidebarView('thumbs')" tabindex="1" data-l10n-id="thumbs">
+             <span data-l10n-id="thumbs_label">Thumbnails</span>
+          </button>
+          <button id="viewOutline" class="toolbarButton group" title="Show Document Outline" onclick="PDFView.switchSidebarView('outline')" tabindex="2" data-l10n-id="outline">
+             <span data-l10n-id="outline_label">Document Outline</span>
+          </button>
+          <button id="viewSearch" class="toolbarButton group hidden" title="Search Document" onclick="PDFView.switchSidebarView('search')" tabindex="3" data-l10n-id="search_panel">
+             <span data-l10n-id="search_panel_label">Search Document</span>
+          </button>
+        </div>
+        <div id="sidebarContent">
+          <div id="thumbnailView">
+          </div>
+          <div id="outlineView" class="hidden">
+          </div>
+          <div id="searchView" class="hidden">
+            <div id="searchToolbar">
+              <input id="searchTermsInput" class="toolbarField" onkeydown='if (event.keyCode == 13) PDFView.search()'>
+              <button id="searchButton" class="textButton toolbarButton" onclick='PDFView.search()' data-l10n-id="search">Find</button>
+            </div>
+            <div id="searchResults"></div>
+          </div>
+        </div>
+      </div>  <!-- sidebarContainer -->
+
+      <div id="mainContainer">
+        <div class="toolbar">
+          <div id="toolbarContainer">
+
+            <div id="toolbarViewer">
+              <div id="toolbarViewerLeft">
+                <button id="sidebarToggle" class="toolbarButton" title="Toggle Sidebar" tabindex="4" data-l10n-id="toggle_slider">
+                  <span data-l10n-id="toggle_slider_label">Toggle Sidebar</span>
+                </button>
+                <div class="toolbarButtonSpacer"></div>
+                <div class="splitToolbarButton">
+                  <button class="toolbarButton pageUp" title="Previous Page" onclick="PDFView.page--" id="previous" tabindex="5" data-l10n-id="previous">
+                    <span data-l10n-id="previous_label">Previous</span>
+                  </button>
+                  <div class="splitToolbarButtonSeparator"></div>
+                  <button class="toolbarButton pageDown" title="Next Page" onclick="PDFView.page++" id="next" tabindex="6" data-l10n-id="next">
+                    <span data-l10n-id="next_label">Next</span>
+                  </button>
+                </div>
+                <label id="pageNumberLabel" class="toolbarLabel" for="pageNumber" data-l10n-id="page_label">Page: </label>
+                <input type="number" id="pageNumber" class="toolbarField pageNumber" onchange="PDFView.page = this.value;" value="1" size="4" min="1" tabindex="7">
+                </input>
+                <span id="numPages" class="toolbarLabel"></span>
+              </div>
+              <div id="toolbarViewerRight">
+                <input id="fileInput" class="fileInput" type="file" oncontextmenu="return false;" style="visibility: hidden; position: fixed; right: 0; top: 0" />
+                <button id="fullscreen" class="toolbarButton fullscreen" title="Fullscreen" tabindex="11" data-l10n-id="fullscreen" onclick="PDFView.fullscreen();">
+                  <span data-l10n-id="fullscreen_label">Fullscreen</span>
+                </button>
+
+                <button id="openFile" class="toolbarButton openFile" title="Open File" tabindex="12" data-l10n-id="open_file" onclick="document.getElementById('fileInput').click()">
+                   <span data-l10n-id="open_file_label">Open</span>
+                </button>
+
+                <button id="print" class="toolbarButton print" title="Print" tabindex="13" data-l10n-id="print" onclick="window.print()">
+                  <span data-l10n-id="print_label">Print</span>
+                </button>
+
+                <button id="download" class="toolbarButton download" title="Download" tabindex="14" data-l10n-id="download">
+                  <span data-l10n-id="download_label">Download</span>
+                </button>
+                <a href="#" id="viewBookmark" class="toolbarButton bookmark" title="Current view (copy or open in new window)" tabindex="15" data-l10n-id="bookmark"><span data-l10n-id="bookmark_label">Current View</span></a>
+              </div>
+              <div class="outerCenter">
+                <div class="innerCenter" id="toolbarViewerMiddle">
+                  <div class="splitToolbarButton">
+                    <button class="toolbarButton zoomOut" title="Zoom Out" onclick="PDFView.zoomOut();" tabindex="8" data-l10n-id="zoom_out">
+                      <span data-l10n-id="zoom_out_label">Zoom Out</span>
+                    </button>
+                    <div class="splitToolbarButtonSeparator"></div>
+                    <button class="toolbarButton zoomIn" title="Zoom In" onclick="PDFView.zoomIn();" tabindex="9" data-l10n-id="zoom_in">
+                      <span data-l10n-id="zoom_in_label">Zoom In</span>
+                     </button>
+                  </div>
+                  <span id="scaleSelectContainer" class="dropdownToolbarButton">
+                     <select id="scaleSelect" onchange="PDFView.parseScale(this.value);" title="Zoom" oncontextmenu="return false;" tabindex="10" data-l10n-id="zoom">
+                      <option id="pageAutoOption" value="auto" selected="selected" data-l10n-id="page_scale_auto">Automatic Zoom</option>
+                      <option id="pageActualOption" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
+                      <option id="pageFitOption" value="page-fit" data-l10n-id="page_scale_fit">Fit Page</option>
+                      <option id="pageWidthOption" value="page-width" data-l10n-id="page_scale_width">Full Width</option>
+                      <option id="customScaleOption" value="custom"></option>
+                      <option value="0.5">50%</option>
+                      <option value="0.75">75%</option>
+                      <option value="1">100%</option>
+                      <option value="1.25">125%</option>
+                      <option value="1.5">150%</option>
+                      <option value="2">200%</option>
+                    </select>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="viewerContainer">
+          <div id="viewer"></div>
+        </div>
+
+        <div id="loadingBox">
+          <div id="loading"></div>
+          <div id="loadingBar"><div class="progress"></div></div>
+        </div>
+
+        <div id="errorWrapper" hidden='true'>
+          <div id="errorMessageLeft">
+            <span id="errorMessage"></span>
+            <button id="errorShowMore" onclick="" oncontextmenu="return false;" data-l10n-id="error_more_info">
+              More Information
+            </button>
+            <button id="errorShowLess" onclick="" oncontextmenu="return false;" data-l10n-id="error_less_info" hidden='true'>
+              Less Information
+            </button>
+          </div>
+          <div id="errorMessageRight">
+            <button id="errorClose" oncontextmenu="return false;" data-l10n-id="error_close">
+              Close
+            </button>
+          </div>
+          <div class="clearBoth"></div>
+          <textarea id="errorMoreInfo" hidden='true' readonly="readonly"></textarea>
+        </div>
+      </div> <!-- mainContainer -->
+
+    </div> <!-- outerContainer -->
+    <div id="printContainer"></div>
+    <div id="socialController"><a id="allAnnots"></a><a id="social">>></a></div>
+    <div id="footer">
+	<div id="toolController"><img id="rect" src="images/rect.svg"/><img id="pencil" src="images/pencil.svg"/><img id="color" src="images/color.svg"/></div>
+    </div>
+    <div id="commentController"><a id="arrow"></a><a id="comment"></a></div>
+  </body>
+</html>

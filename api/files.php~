@@ -1,0 +1,30 @@
+<?php
+$errorurl="http://localhost/viewer/index.html";
+$saveurl="http://localhost/viewer/index.html";
+$allowedExts = array("pdf");
+$extension = end(explode(".", $_FILES["file"]["name"]));
+if (($_FILES["file"]["size"] < 400000)&& in_array($extension, $allowedExts))
+{
+    if ($_FILES["file"]["error"] > 0)
+    {
+    	$msg= "Return Code: " . $_FILES["file"]["error"] . "<br />";
+	header( 'Location: '.$errorurl.'?errormsg='.$msg) ;
+    }
+    else
+    {
+	echo "Upload: " . $_FILES["file"]["name"] . "<br />";
+	echo "Type: " . $_FILES["file"]["type"] . "<br />";
+	echo "Size: " . ($_FILES["file"]["size"] / 1024) . " Kb<br />";
+	echo "Temp file: " . $_FILES["file"]["tmp_name"] . "<br />";
+	$newfilename=md5(uniqid()).'.'.$extension;
+	move_uploaded_file($_FILES["file"]["tmp_name"],
+	"../pdf/" . $newfilename);
+	echo "Stored in: " . "../pdf/" .$newfilename;
+ 	header( 'Location: '.$saveurl.'?file='.$newfilename) ;
+    }
+}
+else
+{
+  $msg="Invalid file";
+  header( 'Location: '.$errorurl.'?errormsg='.$msg) ;
+}
