@@ -1,0 +1,272 @@
+<!doctype HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>My Library</title>
+    <link rel="stylesheet" href="css/index.css"/> 
+    <style type="text/css">
+	#viewerContainer {
+	  overflow: auto;
+	  box-shadow: inset 1px 0 0 hsla(0,0%,100%,.05);
+	  padding-top: 30px;
+	  position: absolute;
+	  top: 32px;
+	  right: 0;
+	  bottom: 0;
+	  left: 0;
+	}
+	#wrapper {
+	  background-color: #F9F9F9;
+	  border: 1px solid #6B7B95;
+	  color: #000;
+	  float: left;
+	  height: 120px;
+	  padding: 10px;
+	  width: 400px;
+	  position:absolute;
+	  left:30%;
+	  top:20%;
+	  z-index:2;
+	}
+	#bookdetail {
+	  border: 1px solid #6B7B95;
+	  background-color:#F9F9F9;
+	  z-index:10;
+	  position:absolute;
+	}
+	.bookmeta{
+	  position:absolute;
+	}
+	.selected{
+	  background-color: #F9F9F9;
+	}
+    </style>
+    <!--Get mootools-->
+    <script src="js/mootools-core.js" type="text/javascript"></script>
+    <script src="js/mootools-more.js" type="text/javascript"></script>
+    <script src="js/cookie.js"></script>
+    <script type="text/javascript">
+        var IP="http://localhost/viewer/api";
+	var thumbnailurl="http://localhost/viewer/pdfimage/";
+	var pdfurl="http://localhost/viewer/pdf";
+	var readurl="http://localhost/viewer/read.html";
+	function getParameterByName(name)
+	{
+	  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	  var regexS = "[\\?&]" + name + "=([^&#]*)";
+	  var regex = new RegExp(regexS);
+	  var results = regex.exec(window.location.search);
+	  if(results == null)
+	    return "";
+	  else
+	    return decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	function getUploadBooks(uid,token)
+	{
+		var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/library.php', onSuccess: function(upload){
+		    for(var i=0;i<upload.length;i++)
+		    {
+			var book=upload[i];
+			// Creating an new anchor with an Object
+			var wid=window.innerWidth;
+			var hei=window.innerHeight;
+			var newbook = new Element('li', {
+			    id:i,
+			    'class': 'bookmeta',
+			    html:'',
+			    styles: {
+				'background-image':'url('+thumbnailurl+book.thumbnail+')',
+				'background-size':wid/6+'px',
+				'background-repeat':'no-repeat',
+				'width':wid/5,
+				'height':hei/3,
+				'display': 'block',
+				'left':(i%4)*wid/4+wid/30,
+				'top':Math.floor(i/4)*hei/2+hei/30,
+			    },
+			    events: {
+				click: function(){
+				   window.location=readurl+'?bid='+upload[this.id].bid;
+				},
+				mouseover: function(e){
+				    e.stop(e);
+				    $('booktitle').set('html','Title:'+upload[this.id].title);
+				    $('bookauthor').set('html','Author:'+upload[this.id].author);
+				    $('bookdetail').show();
+				    $('bookdetail').setStyles({
+					    'width':this.style.width,
+					    'height':this.style.height,
+					    'left':e.event.clientX,
+					    'top':e.event.clientY
+					});	
+				},
+				mouseleave:function()
+				{
+				    $('bookdetail').hide();
+				}			
+			    }
+			}).inject($("books"));
+		    }
+		}}).get({'uid': uid, 'token': token});
+	}
+ 	window.addEvent('domready', function() {
+
+	 if(checkCookie("uid")!=0)
+	 { 
+		getUploadBooks(1,'abc');
+	 }
+	 else 
+	 {
+		window.location="public.html";
+	 }
+	 $('bookdetail').hide();
+         var filename=getParameterByName('file');
+	 var errormsg=getParameterByName('error');
+	 if(errormsg!="")
+	 {
+		$('errorform').set('html','<center>'+errormsg+'</center>');
+		$('savefileform').hide();
+		$('uploadfileform').hide();
+		$('uploadurlform').hide();
+	 }
+	 else if(filename!="")
+	 {
+                $('wrapper').show();
+		$('filename').set('value', filename);
+		$('thumbnail').set('value', filename+'.jpg');
+		$('savefileform').show();
+		$('uploadfileform').hide();
+		$('uploadurlform').hide();
+		$('wrapper').tween('height', 250);
+	 }
+	 else  
+	 {
+		$('savefileform').hide();
+        	$('wrapper').hide();
+		$('uploadfileform').hide();
+		$('uploadurlform').show();
+	        $('cancel').hide();
+	 }
+	 $('upload').addEvent('click', function(){
+	    	$('wrapper').show();
+	        $('cancel').show();
+	  });
+ 	$('uploadviafile').addEvent('click', function(){
+		$('uploadfileform').show();
+		$('uploadurlform').hide();
+	  });
+	$('uploadviaurl').addEvent('click', function(){
+		$('uploadfileform').hide();
+		$('uploadurlform').show();
+	  });
+	$('cancel').addEvent('click', function(){
+	    $('wrapper').hide();
+	    $(this).hide();
+	  });
+	});
+    </script>
+</head>
+<body>
+<div>
+    <div id="outerContainer">
+	<div class="toolbar">
+		<div id="toolbarLeft">
+                        <a href="public.html">Public</a>
+		</div>
+		<div id="toolbarRight">
+			<button id="upload" class="toolbarButton upload" title="Upload" tabindex="12" data-l10n-id="open_file">
+			   <span data-l10n-id="open_file_label">Upload</span>
+			</button>
+		</div>
+		<div id="toolbarCenter">
+			My Library
+		</div>
+        </div>
+        <div id="viewerContainer">
+		<div id="wrapper">
+			<div id="uploadurlform">
+			<form method="post" action="api/uploadurl.php" enctype="multipart/form-data">
+			<fieldset>
+				<legend>Upload Via URL</legend>
+
+				<div>
+					<input name="urlfile" size="30" type="text" placeholder="Upload Via URL"/>
+				</div>
+
+				<div>
+					<input type="submit" name="submit" value="Upload">
+				</div>
+				<a style="float:right;" id="uploadviafile">or Upload from computer</a>
+			</fieldset>
+			</form>
+			</div>
+			<div id="uploadfileform">
+			<form method="post" action="api/uploadfile.php" enctype="multipart/form-data">
+			<fieldset>
+				<legend>Upload Files</legend>
+
+				<div>
+					<label for="file">File: </label>
+					<input type="file" name="file" id="file"><br>
+				</div>
+
+				<div>
+					<input type="submit" name="submit" value="Upload">
+				</div>
+				<a style="float:right;" id="uploadviaurl">upload via URL</a>
+			</fieldset>
+			</form>
+			</div>
+			<div id="savefileform">
+			 Successfully Uploaded, Please Fill in More Information
+			<form method="post" action="api/savefile.php">
+			<fieldset>
+				<legend>Save File</legend>
+
+				<div>
+					<input type="hidden" name="filename" id="filename">
+					<input type="hidden" name="thumbnail" id="thumbnail">
+					<label for="filetitle">Title*: </label>
+					<input type="text" name="filetitle"><br>
+					<label for="author">Author: </label>
+					<input type="text" name="author"><br>
+					<label for="langauge">Language: </label>
+					<select name="language"><option value="">Choose a language</option><option value="af">‪Afrikaans‬</option><option value="ms">‪Bahasa Melayu‬</option><option value="ca">‪Català‬</option><option value="cs">‪Čeština‬</option><option value="da">‪Dansk‬</option><option value="de">‪Deutsch‬</option><option value="et">‪Eesti‬</option><option value="en_GB">‪English (United Kingdom)‬</option><option value="en" selected="">‪English (United States)‬</option><option value="es">‪Español (España)‬</option><option value="es_419">‪Español (Latinoamérica)‬</option><option value="tl">‪Filipino‬</option><option value="fr">‪Français‬</option><option value="hr">‪Hrvatski‬</option><option value="zu">‪IsiZulu‬</option><option value="it">‪Italiano‬</option><option value="sw">‪Kiswahili‬</option><option value="lv">‪Latviešu‬</option><option value="lt">‪Lietuvių‬</option><option value="hu">‪Magyar‬</option><option value="nl">‪Nederlands‬</option><option value="no">‪Norsk‬</option><option value="pl">‪Polski‬</option><option value="pt_BR">‪Português (Brasil)‬</option><option value="pt_PT">‪Português (Portugal)‬</option><option value="ro">‪Română‬</option><option value="sk">‪Slovenčina‬</option><option value="sl">‪Slovenščina‬</option><option value="fi">‪Suomi‬</option><option value="sv">‪Svenska‬</option><option value="vi">‪Tiếng Việt‬</option><option value="tr">‪Türkçe‬</option><option value="el">‪Ελληνικά‬</option><option value="be">‪Беларуская‬</option><option value="bg">‪Български‬</option><option value="ru">‪Русский‬</option><option value="sr">‪Српски‬</option><option value="uk">‪Українська‬</option><option value="am">‪አማርኛ‬</option><option value="hi">‪हिन्दी‬</option><option value="th">‪ไทย‬</option><option value="ko">‪한국어‬</option><option value="zh_CN">‪中文（简体）‬</option><option value="ja">‪日本語‬</option><option value="zh_TW">‪繁體中文‬</option></select><br>
+					<label for="access">Accessibility: </label>
+					<select name="access">
+					  <option value="public">Public</option>
+					  <option value="friends">Friends</option>
+					  <option value="me">Only Me</option>
+					</select><br>
+					<label for="description">Descriptions: </label>
+					<textarea name="description"></textarea><br>
+				</div>
+
+				<div>
+					 <input type="checkbox" name="tac" value="agree"> I Agree with the <a href="tac.html">Terms and conditions</a>
+					 <input type="submit" name="submit" value="Save">
+				</div>
+
+			</fieldset>
+			</form>
+			</div>
+			<div id="errorform">
+			</div>
+			<a style="float:right;" id="cancel">Close</a>
+		 </div>
+		 <div>
+			<ul id="books">
+			</ul>
+		 </div>
+		 <div id="bookdetail">
+			<ul>
+			<li id="booktitle"></li>
+			<li id="bookauthor"></li>
+			</ul>
+		 </div>
+	</div>
+    </div>
+</div>
+</body>
+</html>

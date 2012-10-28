@@ -8,9 +8,24 @@ switch ($_SERVER['REQUEST_METHOD'])
             {
 		   if (isset($_GET['uid']))
 		   {
-			    $uid=$_GET['uid'];$bid=$_GET["bid"]; $pid=$_GET["pid"];
+			  $uid=$_GET['uid'];$bid=$_GET["bid"]; $pid=$_GET["pid"];
+			  if(isset($_GET['friends'])){
+				if(($_GET['friends'])=='fb')
+				{
+				    $query = sprintf("SELECT fbid FROM `User` WHERE uid='%s'", mysql_real_escape_string($uid));
+				    $res=mysql_query($query);
+				    if($res)
+			            {	   
+					    $row=mysql_fetch_array($res);$fbid=$row['fbid'];
+					    $uid=$_GET['uid'];$bid=$_GET["bid"]; $pid=$_GET["pid"];
+					    $query = sprintf("SELECT a.* FROM `User` u,`Annotation` a,`FBfriends` fb WHERE a.bid='%s' AND a.pid='%s' AND fb.fbid1='%s' AND u.fbid=fb.fbid2 AND u.uid=a.uid", mysql_real_escape_string($bid),mysql_real_escape_string($pid),mysql_real_escape_string($fbid));
+					    $res= mysql_query($query);
+				    }
+				}
+			  }else{
 			    $query = sprintf("SELECT * FROM `Annotation` WHERE uid='%s' AND bid='%s' AND pid='%s'", mysql_real_escape_string($uid),mysql_real_escape_string($bid),mysql_real_escape_string($pid));
 			    $res= mysql_query($query);
+			 }
 		    }else
 		    {
 			    $bid=$_GET["bid"]; $pid=$_GET["pid"];
@@ -61,7 +76,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 	    	switch ($operation)
 		{
 			case 'update':
-			$query = sprintf("UPDATE `Annotation` SET text='%s' AND access='%s' WHERE uid='%s' AND bid='%s' AND pid='%s' AND aid='%s'",
+			$query = sprintf("UPDATE `Annotation` SET text='%s',access='%s' WHERE uid='%s' AND bid='%s' AND pid='%s' AND aid='%s'",
 			        mysql_real_escape_string($annotation["text"]),
 				mysql_real_escape_string($annotation["access"]),
 				mysql_real_escape_string($annotation["uid"]),
@@ -91,7 +106,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 			else echo json_encode("delete success");
 			break;
 			case 'create':
-			$query = sprintf("INSERT INTO `Annotation`(uid,bid,pid,startx,starty,width,height,type,text,points,access,color) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
+			$query = sprintf("INSERT INTO `Annotation`(uid,bid,pid,startx,starty,width,height,type,text,points,access,color,thumbnail) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
 			        mysql_real_escape_string($uid),
 				mysql_real_escape_string($annotation["bid"]),
 				mysql_real_escape_string($annotation["pid"]),
@@ -103,7 +118,8 @@ switch ($_SERVER['REQUEST_METHOD'])
 				mysql_real_escape_string($annotation["text"]),
 				mysql_real_escape_string($annotation["points"]),
 				mysql_real_escape_string($annotation["access"]),
-				mysql_real_escape_string($annotation["color"]));
+				mysql_real_escape_string($annotation["color"]),
+				mysql_real_escape_string($annotation["thumbnail"]));
 			$result = mysql_query($query);
 			if (!$result) {
 			    $message  = 'Invalid query: ' . mysql_error() . "\n";
