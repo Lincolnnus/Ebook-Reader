@@ -36,7 +36,7 @@ if ($user) {
   try {
     // Proceed knowing you have a logged in user who's authenticated.
     $user_profile = $facebook->api('/me');
-    include_once("api/connection.php"); 
+    include_once("connection.php"); 
     $query = sprintf("SELECT * FROM `User` WHERE fbid='%s'",mysql_real_escape_string($user));
 	    $result = mysql_query($query);
 	    if (!$result) {
@@ -121,15 +121,15 @@ if ($user) {
       setcookie('name',$my_profile["name"],time()+$expire, $path, $domain, 0,0);
       setcookie('token',$my_profile["token"],time()+$expire, $path, $domain, 0,0);
       setcookie('thumbnail',$my_profile["avatar_url"],time()+$expire, $path, $domain,0, 0);
-      if (isset($_COOKIE['redirect']))
-          header("Location:".$_COOKIE['redirect']);
-      else header("Location:".SERVER_URL."/index.html");
+      if(isset($_COOKIE["redirect"]))
+      {header("Location:".$_COOKIE["redirect"]);}
+      else {header("Location:".SERVER_URL."/index.html");}
 	
   }
   else { 
-      if (isset($_COOKIE['redirect']))
-          header("Location:".$_COOKIE['redirect']);
-      else {header("Location:".SERVER_URL."public.html?error=error with fb login");
+      if (isset($_COOKIE["redirect"]))
+      {   header("Location:".$_COOKIE["redirect"]);}
+      else {header("Location:".SERVER_URL."/public.html?error=Error With Facebook Login");}
       }
 } else {
   $loginUrl = $facebook->getLoginUrl();
