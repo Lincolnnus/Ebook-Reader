@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/annotools.css"/>
 
     <script type="text/javascript" src="js/compatibility.js"></script> <!-- PDFJSSCRIPT_REMOVE_FIREFOX_EXTENSION -->
-
+    <script src="js/cookie.js"></script>
 <!-- This snippet is used in production, see Makefile -->
 <link rel="resource" type="application/l10n" href="locale.properties"/>
 <style type="text/css">
@@ -83,9 +83,9 @@
     <script type="text/javascript" src="js/viewer.js"></script>
     <script type="text/javascript" src="js/mootools-core.js"></script>
     <script type="text/javascript" src="js/mootools-more.js"></script>
-    <script type="text/javascript" src="js/annotools.js"></script>
     <script type="text/javascript">
-	var bid;
+	var bid,uid,thumbnail,name,token;
+	var me=new Object();
 	var annots=new Array();
 	var friendAnnots=new Array();
 	function getSelected() {
@@ -98,24 +98,18 @@
             }
             return false;
         }
-	function getAnnot()
-	{
-		var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
-				    annots=e;
-					friendAnnots[0]=annots[0];
-					friendAnnots[1]=annots[1];
-					friendAnnots[0].picture="http://graph.facebook.com/25813592/picture";
-					friendAnnots[0].name="Keith";
-					friendAnnots[1].picture="http://graph.facebook.com/28806505/picture";
-					friendAnnots[1].name="Kiki";
-				}}).get({'bid': bid});
+	function getAnnot(){
+		var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){annots=e;}}).get({'bid': bid});
 	}
 	var annotPage=null;
         function displayAnnot(currentPage)
 	{	
 		if(annotPage!=currentPage)
 		{	
-			var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+			var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
+				    friendAnnots=e;
+				}}).get({'bid': bid,'pid':currentPage,'uid':uid,'friends':'fb'});
+			var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
 			var thisCanvas=$("annotCanvas"+currentPage);
 			var canvasWidth=thisCanvas.width;
 			var canvasHeight=thisCanvas.height;
@@ -224,7 +218,7 @@
 		$('save').addEvent('click', function(){
 				var text=$('text').value;
 				var access=$('access').value;
-				var uid=1,token='abc',pid=PDFView.page;
+				var pid=PDFView.page;
 				annot.bid=bid;
 				annot.pid=pid;
 				annot.startx=annot.startx/canvasWidth;
@@ -232,18 +226,22 @@
 				annot.width=annot.width/canvasWidth;
 				annot.height=annot.height/canvasHeight;
 				annot.access=access;
-				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
 				    $('comment').set('html','');
 				    $('arrow').set('html','');
 				    $('commentController').setStyle('background-color', '');
 				    annots.push(annot); 
 				    displayAnnot(pid);
-				}}).post({'uid': uid, 'token': token,'annot':annot});
+				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'create'});
 
 		});
 	}
 
 	window.addEvent('domready', function() {
+	uid=getCookie('uid');
+	token=getCookie('token');
+	thumbnail=getCookie('thumbnail');
+	name=getCookie('name');
 	$("toolController").hide();
 	$("download").addEvent('click',function(){displayAnnot();});
 	$("footer").addEvent('mouseenter',function(){$("toolController").show();});
@@ -291,14 +289,14 @@
 		$('save').addEvent('click', function(){
 				var text=$('text').value;
 				var access=$('access').value;
-				var uid=1,token='abc',pid=PDFView.page;
+				var pid=PDFView.page;
 				annot.text=text;
 				annot.access=access;
-				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
 				    $('comment').set('html','');
 				    $('arrow').set('html','');
 				    $('commentController').setStyle('background-color', '');
-				    annots[i]=annot; 
+				    annots[id]=annot; 
 				    displayAnnot(pid);
 				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'update'});
 
@@ -306,8 +304,8 @@
 		$('delete').addEvent('click', function(){
 				var text=$('text').value;
 				var access=$('access').value;
-				var uid=1,token='abc',pid=PDFView.page;
-				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				var pid=PDFView.page;
+				var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
 				    $('comment').set('html','');
 				    $('arrow').set('html','');
 				    $('commentController').setStyle('background-color', '');
@@ -322,38 +320,56 @@
 		document.getElements(".annotList").destroy();
 		for(var i=0;i<annots.length;i++)
 		{
-			var list=new Element('li',{id:i,'class':'annotList',html:">"+annots[i].text.substring(0,9)}).inject($("mine"));
-			list.addEvent('click',function(){editAnnot(this.id);});
-			list.set('morph', {duration: 200});
-			list.addEvents({
-			    mouseenter: function(){
-			      // this refers to the element in an event
-			      this.morph({
-				'background-color': '#666',
-				'color': '#FF8',
-				'margin-left': 5
-			      });
-			      showThisAnnot(this.id);
-			      highlight(this.id);
-			    },
-			    mouseleave: function(){
-			      // this refers to the element in an event
-			      this.morph({
-				'background-color': '#333',
-				'color': '#888',
-				'margin-left': 0
-			      });
-			    }
-			});
+			if(annots[i].uid==uid)
+			{
+				var list=new Element('li',{id:i,'class':'annotList',html:">"+annots[i].text.substring(0,9)}).inject($("mine"));
+				list.addEvent('click',function(e){e.stop();editAnnot(this.id);});
+				list.set('morph', {duration: 200});
+				list.addEvents({
+				    mouseenter: function(e){
+				      // this refers to the element in an event
+				      this.morph({
+					'background-color': '#666',
+					'color': '#FF8',
+					'margin-left': 5
+				      });
+				      e.stop();
+				      showThisAnnot(this.id);
+				      highlight(this.id);
+				    },
+				    mouseleave: function(){
+				      // this refers to the element in an event
+				      this.morph({
+					'background-color': '#333',
+					'color': '#888',
+					'margin-left': 0
+				      });
+				    }
+				});
+			}
 
 		}
 	}
 	function showFriendAnnots(friendDiv)
 	{
+		$("friend").set('html','Friends');
 		document.getElements(".annotList").destroy();
+		var list=new Array();
+		var friendAnnotLis=new Array();
+		var index=0;
 		for(var i=0;i<friendAnnots.length;i++)
 		{
-			var list=new Element('li',{id:i,'class':'annotList',html:">"+friendAnnots[i].text.substring(0,9)}).inject(friendDiv);
+			for(var j=0;j<i;j++)
+			{if(friendAnnots[i].uid==friendAnnots[j].uid)break;}
+			if (i==j){ list[index]=friendAnnots[i].uid;index++; var newannot=new Element('ul',{'class':'friendList',html:'<img src="'+friendAnnots[i].thumbnail+'" title="'+friendAnnots[i].name+'">'}).inject($("friend"));newannot.addEvent('mouseenter',function(){showFriendAnnots(this);});}
+
+		}
+		for(var i=0;i<friendAnnots.length;i++)
+		{
+			
+			
+
+			list[index]=new Element('li',{id:i,'class':'annotList',html:">"+friendAnnots[i].text.substring(0,9)}).inject(friendDiv);
 			list.set('morph', {duration: 200});
 			list.addEvents({
 			    mouseenter: function(){
@@ -375,7 +391,6 @@
 			      });
 			    }
 			});
-
 		}
 	}
 	function highlight(id)	
@@ -441,54 +456,81 @@
 		$('save').addEvent('click', function(){
 				var text=$('text').value;
 				var access=$('access').value;
-				var uid=1,token='abc',pid=PDFView.page;
+				var pid=PDFView.page;
 				annot.text=text;
 				annot.bid=bid;
 				annot.pid=pid;
 				annot.access=access;
-				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/comment.php', onSuccess: function(e){
+				var jsonRequest = new Request.JSON({url: 'api/comment.php', onSuccess: function(e){
 				    $('comment').set('html','');
 				    $('arrow').set('html','');
 				    $('commentController').setStyle('background-color', '');
 				    annots.push(annot); 
 				    displayAnnot(pid);
-				}}).post({'uid': uid, 'token': token,'annot':annot});
+				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'create'});
 
 		});
 	}
 	function showFriends()
 	{
-		var clicked=false;
+		$("friend").set('html','Friends');
 		for(var i=0;i<friendAnnots.length;i++)
-		{
-			var newannot=new Element('ul',{'class':'friendList',html:'<img src="'+friendAnnots[i].picture+'" title="'+friendAnnots[i].name+'">'}).inject($("friend"));
-			newannot.addEvent('click',function(){if(clicked){document.getElements('.annotList').destroy();clicked=false;}else{showFriendAnnots(this);clicked=true;}});
+		{	
+			var newannot=new Element('ul',{'class':'friendList',html:'<img src="'+friendAnnots[i].thumbnail+'" title="'+friendAnnots[i].name+'">'}).inject($("friend"));
+			newannot.addEvent('mouseenter',function(){showFriendAnnots(this);});
 			
 		}
 	}
 	function showPublic()
 	{
+		document.getElements(".annotList").destroy();
 		for(var i=0;i<annots.length;i++)
 		{
-			var newannot=new Element('div',{'class':'annotindex',id:i,html:annots[i].aid}).inject($("public"));
-			newannot.addEvent('click',function(){console.log(annots[this.id]);alert(annots[this.id].text);});
+			if(annots[i].uid!=uid)
+			{
+				var list=new Element('li',{id:i,'class':'annotList',html:'<img width="10px" src="'+annots[i].thumbnail+'">'+annots[i].text.substring(0,5)}).inject($("public"));
+				list.set('morph', {duration: 200});
+				list.addEvents({
+				    mouseenter: function(){
+				      // this refers to the element in an event
+				      this.morph({
+					'background-color': '#666',
+					'color': '#FF8',
+					'margin-left': 5
+				      });
+				      showThisAnnot(this.id);
+				      highlight(this.id);
+				    },
+				    mouseleave: function(){
+				      // this refers to the element in an event
+				      this.morph({
+					'background-color': '#333',
+					'color': '#888',
+					'margin-left': 0
+				      });
+				    }
+				});
+			}
+
 		}
 	}
-	var me=new Object();
-        me.name="Shaohuan Li";
-        me.picture="http://graph.facebook.com/1476261048/picture";
-	me.fbid="1476261048";
 	function displayAllAnnot()
 	{
-		var newannot=new Element('ul',{'class':'annotindex',id:"mine",html:'<img src="'+me.picture+'" title="'+me.name+'">'}).inject($('allAnnots'));
-		var clicked=false;
-			newannot.addEvent('click',function(){if(clicked){this.set("html",'<img src="'+me.picture+'" title="'+me.name+'">');clicked=false;}
-			else {showMine();clicked=true;}});
+
+		me.name=getCookie("name");
+		me.picture=getCookie("thumbnail");
+		me.uid=getCookie("uid");
+		if(checkCookie("uid")!="")
+		{
+		var newannot=new Element('div',{'class':'annotindex',id:"mine",html:'<img src="'+me.picture+'" title="'+me.name+'">'}).inject($('allAnnots'));
+			newannot.addEvent('click',function(){showMine();});
+			newannot.addEvent('mouseleave',function(){this.set("html",'<img src="'+me.picture+'" title="'+me.name+'">');});
 		var newannot=new Element('div',{'class':'annotindex',id:"friend",html:"Friends"}).inject($('allAnnots'));
-			newannot.addEvent('mouseenter',function(){showFriends();});
+			newannot.addEvent('click',function(){showFriends();});
 			newannot.addEvent('mouseleave',function(){this.set("html","Friends");});
+		}
 		var newannot=new Element('div',{'class':'annotindex',id:"public",html:"Public"}).inject($('allAnnots'));
-			newannot.addEvent('mouseenter',function(){showPublic();});
+			newannot.addEvent('click',function(){showPublic();});
 			newannot.addEvent('mouseleave',function(){this.set("html","Public");});
 		
 	}
@@ -544,18 +586,18 @@
 		$('save').addEvent('click', function(){
 				var text=$('text').value;
 				var access=$('access').value;
-				var uid=1,token='abc',pid=PDFView.page;
+				var pid=PDFView.page;
 				annot.text=text;
 				annot.bid=bid;
 				annot.pid=pid;
 				annot.access=access;
-				var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/annotation.php', onSuccess: function(e){
+				var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){
 				    $('comment').set('html','');
 				    $('arrow').set('html','');
 				    $('commentController').setStyle('background-color', '');
 				    annots.push(annot); 
 				    displayAnnot(pid);
-				}}).post({'uid': uid, 'token': token,'annot':annot});
+				}}).post({'uid': uid, 'token': token,'annot':annot,'operation':'create'});
 
 		});
 	}
@@ -598,7 +640,7 @@
 		 		thisCanvas.addEvent('mouseup', function(e){
 					started=false;
 					textLayer.show();
-					var newAnnot= {startx:startx/canvasWidth,starty:starty/canvasHeight,width:(e.event.layerX-startx)/canvasWidth,height:(e.event.layerY-starty)/canvasHeight,type:'rect',color:color};
+					var newAnnot= {startx:startx/canvasWidth,starty:starty/canvasHeight,width:(e.event.layerX-startx)/canvasWidth,height:(e.event.layerY-starty)/canvasHeight,type:'rect',color:color,uid:uid,thumbnail:thumbnail};
 					var bottom=document.body.offsetHeight-e.event.pageY-commentController.offsetHeight;
 					saveAnnot(newAnnot,bottom);
 				     });
@@ -652,17 +694,12 @@
 				    points=points.slice(0, -1)
 				    points+=';';
 				} 
- 				var newAnnot= {startx:x/canvasWidth,starty:y/canvasHeight,width:(e.event.layerX-x)/canvasWidth,height:(e.event.layerY-y)/canvasHeight,type:'pencil',points:points,color:color};
+ 				var newAnnot= {startx:x/canvasWidth,starty:y/canvasHeight,width:(e.event.layerX-x)/canvasWidth,height:(e.event.layerY-y)/canvasHeight,type:'pencil',points:points,color:color,uid:uid,thumbnail:thumbnail};
 				var bottom=document.body.offsetHeight-e.event.pageY-commentController.offsetHeight;
 				saveAnnot(newAnnot,bottom);
 			     });
 			break;
 		}
-	}
-	function editAnnotation()
-	{
-		var containerid="pageContainer"+PDFView.page;
-    		//annotool=new annotools('tool',{left:'40%',top:'90%',canvas:containerid});
 	}
     </script>
   </head>
