@@ -37,7 +37,8 @@ switch ($_SERVER['REQUEST_METHOD'])
 		}
 		else{
 			$bid= mysql_insert_id();
-			header( 'Location: '.successurl.'?bid='.$bid);
+            setcookie("bid",$bid);
+			header( 'Location: '.successurl);
 		}
 	   }
 	   else

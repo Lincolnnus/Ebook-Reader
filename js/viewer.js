@@ -1818,9 +1818,10 @@ var TextLayerBuilder = function textLayerBuilder(textLayerDiv) {
 window.addEventListener('load', function webViewerLoad(evt) {
     PDFView.initialize();
     var params = PDFView.parseQueryString(document.location.search.substring(1));
-    bid = params.bid;
-    getAnnot();
-  var jsonRequest = new Request.JSON({url: 'http://localhost/viewer/api/book.php', 
+    bid = getCookie("bid");
+    if(bid==""){window.location="public.html?error=no such book";}
+    else{
+  var jsonRequest = new Request.JSON({url: 'api/book.php', 
 		onSuccess: function(e){ 
       var file=e.file;//get file from ajax
   if (PDFJS.isFirefoxExtension || !window.File || !window.FileReader ||
@@ -1898,6 +1899,7 @@ window.addEventListener('load', function webViewerLoad(evt) {
     });
       PDFView.open(file, 0);
 		}}).get({'bid': bid, 'token': 'abc'});
+                        }
 }, true);
 
 function updateViewarea() {

@@ -117,7 +117,7 @@ if ($user) {
 	setcookie("name",$my_profile["name"]);
 	setcookie("token",$my_profile["token"]);
 	setcookie("thumbnail",$my_profile["avatar_url"]);
-	header("Location:".SERVER_URL."/account.html");
+	header("Location:".SERVER_URL."/index.html");
 	
   }
   else { header("Location:".SERVER_URL."public.html?error=error with fb login");}
