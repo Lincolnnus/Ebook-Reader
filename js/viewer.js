@@ -1819,12 +1819,12 @@ window.addEventListener('load', function webViewerLoad(evt) {
     PDFView.initialize();
     var params = PDFView.parseQueryString(document.location.search.substring(1));
     bid = getCookie("bid");
-    if(bid==""){window.location="public.html?error=no such book";}
+    if(bid==""){window.location="public.html?error=no book selected";}
     else{
   var jsonRequest = new Request.JSON({url: 'api/book.php', 
 		onSuccess: function(e){ 
       var file=e.file;//get file from ajax
-  if (PDFJS.isFirefoxExtension || !window.File || !window.FileReader ||
+ /* if (PDFJS.isFirefoxExtension || !window.File || !window.FileReader ||
       !window.FileList || !window.Blob) {
     document.getElementById('openFile').setAttribute('hidden', 'true');
   } else {
@@ -1896,7 +1896,7 @@ window.addEventListener('load', function webViewerLoad(evt) {
       outerContainer.classList.toggle('sidebarOpen');
       PDFView.sidebarOpen = outerContainer.classList.contains('sidebarOpen');
       PDFView.renderHighestPriority();
-    });
+    });*/
       PDFView.open(file, 0);
 		}}).get({'bid': bid, 'token': 'abc'});
                         }
@@ -1938,7 +1938,7 @@ function updateViewarea() {
   store.set('scrollLeft', Math.round(topLeft[0]));
   store.set('scrollTop', Math.round(topLeft[1]));
   var href = PDFView.getAnchorUrl(pdfOpenParams);
-  document.getElementById('viewBookmark').href = href;
+ // document.getElementById('viewBookmark').href = href;
 }
 
 window.addEventListener('resize', function webViewerResize(evt) {

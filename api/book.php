@@ -18,7 +18,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 		    }else 
 		    {
 			$row=mysql_fetch_assoc($result);
-			echo json_encode(array('file'=>'http://www.yunreading.com/viewer/pdf/'.$row["filename"]));
+			echo json_encode(array('file'=>DATASERVER_URL.'/pdf/'.$row["filename"]));
 		    }//successfully get upload information
 	}
 	else

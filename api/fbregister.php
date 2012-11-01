@@ -114,15 +114,26 @@ if ($_REQUEST) {
 		     if ($result){$my_profile=mysql_fetch_array($result);}//If the facebook user has already registered.
 		    }
 	    }
-	  if ($my_profile)
-	  {
-		setcookie("uid", $my_profile["uid"]);	
-		setcookie("name",$my_profile["name"]);
-		setcookie("token",$my_profile["token"]);
-		setcookie("thumbnail",$my_profile["avatar_url"]);
-		header("Location:".SERVER_URL."/account.html");
-	  }
-	  else { header("Location:".SERVER_URL."public.html?error=error with fb login");}
+    if(isset($_POST["remember"])&&($_POST["remember"]==1))
+    {$expire=360000;}else{$expire=3600;}
+    $path="/viewer";
+    $domain="";
+    if ($my_profile)
+    {
+        setcookie('uid', $my_profile["uid"],time()+$expire,$path, $domain,0,0);
+        setcookie('name',$my_profile["name"],time()+$expire, $path, $domain, 0,0);
+        setcookie('token',$my_profile["token"],time()+$expire, $path, $domain, 0,0);
+        setcookie('thumbnail',$my_profile["avatar_url"],time()+$expire, $path, $domain,0, 0);
+        if (isset($_COOKIE['redirect']))
+            header("Location:".$_COOKIE['redirect']);
+        else header("Location:".SERVER_URL."/index.html");
+        
+    }
+    else {
+        if (isset($_COOKIE['redirect']))
+            header("Location:".$_COOKIE['redirect']);
+        else {header("Location:".SERVER_URL."public.html?error=error with fb login");
+        }
 } else {
   //echo 'Please Register';
 }

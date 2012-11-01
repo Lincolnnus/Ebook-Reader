@@ -111,16 +111,26 @@ if ($user) {
 // Login or logout url will be needed depending on current user state.
 if ($user) {
   $logoutUrl = $facebook->getLogoutUrl();
+    if(isset($_POST["remember"])&&($_POST["remember"]==1))
+    {$expire=360000;}else{$expire=3600;}
+    $path="/viewer";
+    $domain="";
   if ($my_profile)
   {
-	setcookie("uid", $my_profile["uid"]);	
-	setcookie("name",$my_profile["name"]);
-	setcookie("token",$my_profile["token"]);
-	setcookie("thumbnail",$my_profile["avatar_url"]);
-	header("Location:".SERVER_URL."/index.html");
+      setcookie('uid', $my_profile["uid"],time()+$expire,$path, $domain,0,0);
+      setcookie('name',$my_profile["name"],time()+$expire, $path, $domain, 0,0);
+      setcookie('token',$my_profile["token"],time()+$expire, $path, $domain, 0,0);
+      setcookie('thumbnail',$my_profile["avatar_url"],time()+$expire, $path, $domain,0, 0);
+      if (isset($_COOKIE['redirect']))
+          header("Location:".$_COOKIE['redirect']);
+      else header("Location:".SERVER_URL."/index.html");
 	
   }
-  else { header("Location:".SERVER_URL."public.html?error=error with fb login");}
+  else { 
+      if (isset($_COOKIE['redirect']))
+          header("Location:".$_COOKIE['redirect']);
+      else {header("Location:".SERVER_URL."public.html?error=error with fb login");
+      }
 } else {
   $loginUrl = $facebook->getLoginUrl();
   header('Location: '.$loginUrl);

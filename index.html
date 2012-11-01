@@ -205,7 +205,8 @@
                                                                                                            },
                                                                                                            events: {
                                                                                                            click: function(){
-                                                                                                           window.location=readurl+'?bid='+upload[this.id].bid;
+                                                                                                           setCookie("bid",upload[this.id].bid);
+                                                                                                           window.location=readurl;
                                                                                                            },
                                                                                                            mouseover: function(e){
                                                                                                            e.stop(e);
@@ -232,7 +233,7 @@
                                               function userLogout()
                                               {
                                               deleteAllCookies();
-                                              window.reload();
+                                              window.location.reload();
                                               }
                                               
                                               window.addEvent('domready', function() {
@@ -270,6 +271,7 @@
                                                                 $('savefileWrapper').show();
                                                                 $('filename').set('value',filename);
                                                                 $('thumbnail').set('value',filename+'.jpg');
+                                                                $('uid').set('value',getCookie('uid'));
                                                                 $('cancelsave').show();
                                                                 $('cancelsave').addEvent('click',function(){$('savefileWrapper').hide(); this.hide();});
                                                               }
@@ -278,7 +280,7 @@
                                                               var error=getParameterByName("error");
                                                               if (error=="login"){$('loginWrapper').show();}
                                                               else if(error!=""){$('errorWrapper').show();$('errormsg').set('html',error);}
-                                                              $('facebook').addEvent('click',function(){window.location='fb.php';});
+                                                              $('facebook').addEvent('click',function(){setCookie("redirect",window.location.href); window.location='api/fb.php';});
                                                               if(checkCookie('uid')!=""){ 
                                                               $('login').set('html',''); 
                                                               var myimg=new Element('img',{'width':'30px','src':getCookie('thumbnail')}).inject($('login'));
@@ -308,13 +310,16 @@
                                                               $('bookdetail').hide();
                                                               
                                                               $('confirmLogin').addEvent('click', function(){
+                                                                                         setCookie('redirect',window.location.href);
                                                                                          var email=$('email').value;
                                                                                          var password=$('password').value;
                                                                                          var jsonRequest = new Request.JSON({url: 'api/login.php', 
-                                                                                                                            onSuccess: function(user){
-                                                                                                                            if(user.code) 
-                                                                                                                            {$('cancelerr').show(); $('errorWrapper').show(); $('errormsg').set('html',user.msg);}
-                                                                                                                            else { setCookie('firstname',user.firstname,1);setCookie('uid',user.uid,1);setCookie('thumnail',user.avatar_url,1);window.location="index.html";}}
+                                                                                                                            onSuccess: function(e){
+                                                                                                                            if(e.code)
+                                                                                                                            {$('cancelerr').show(); $('errorWrapper').show(); $('errormsg').set('html',e.msg);}
+                                                                                                                            else { console.log(e);
+                                                                                                                            var redirect=getCookie("redirect"); window.location=redirect;
+                                                                                                                            }}
                                                                                                                             }).post({'email':email,'password':password});
                                                                                          });
                                                               $('cancelerr').addEvent('click', function(){
@@ -422,6 +427,7 @@
                                     <input type="hidden" name="filename" id="filename">
                                         <input type="hidden" name="thumbnail" id="thumbnail">
                                             <label for="filetitle">Title*: </label>
+                                            <input type="hidden" id="uid" name="uid"/>
                                             <input type="text" name="filetitle"><br>
                                                 <label for="author">Author: </label>
                                                 <input type="text" name="author"><br>

@@ -15,7 +15,8 @@ switch ($_SERVER['REQUEST_METHOD'])
 		$language=$_POST["language"];
 		$access=$_POST["access"];
 		$thumbnail=$_POST["thumbnail"];
-	        $uid=1;
+        $uid=$_POST["uid"];
+          
 		// Formulate Query
 		// This is the best way to perform an SQL query
 		// For more examples, see mysql_real_escape_string()
@@ -37,7 +38,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 		}
 		else{
 			$bid= mysql_insert_id();
-            setcookie("bid",$bid);
+            setcookie("bid",$bid,time()+360000, "/viewer", "",0,0);
 			header( 'Location: '.successurl);
 		}
 	   }

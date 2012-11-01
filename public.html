@@ -193,7 +193,7 @@
                                               function userLogout()
                                               {
                                               deleteAllCookies();
-                                              window.reload();
+                                              window.location.reload();
                                               }
                                               
                                               window.addEvent('domready', function() {
@@ -203,7 +203,7 @@
                                                               var error=getParameterByName("error");
                                                               if (error=="login"){$('loginWrapper').show();}
                                                               else if(error!=""){$('errorWrapper').show();$('errormsg').set('html',error);}
-                                                              $('facebook').addEvent('click',function(){window.location='fb.php';});
+                                                              $('facebook').addEvent('click',function(){setCookie("redirect",window.location.href); window.location='api/fb.php';});
                                                               if(checkCookie('uid')!=""){ 
                                                               $('login').set('html',''); 
                                                               var myimg=new Element('img',{'width':'30px','src':getCookie('thumbnail')}).inject($('login'));
@@ -231,14 +231,18 @@
                                                               getStoreBooks();
                                                               $('bookdetail').hide();
                                                               
+                                                              
                                                               $('confirmLogin').addEvent('click', function(){
+                                                                                         setCookie('redirect',window.location.href);
                                                                                          var email=$('email').value;
                                                                                          var password=$('password').value;
-                                                                                         var jsonRequest = new Request.JSON({url: 'api/login.php', 
-                                                                                                                            onSuccess: function(user){
-                                                                                                                            if(user.code) 
-                                                                                                                            {$('cancelerr').show(); $('errorWrapper').show(); $('errormsg').set('html',user.msg);} 
-                                                                                                                            else { setCookie('firstname',user.firstname,1);setCookie('uid',user.uid,1);setCookie('thumnail',user.avatar_url,1);window.location="index.html";}}
+                                                                                         var jsonRequest = new Request.JSON({url: 'api/login.php',
+                                                                                                                            onSuccess: function(e){
+                                                                                                                            if(e.code)
+                                                                                                                            {$('cancelerr').show(); $('errorWrapper').show(); $('errormsg').set('html',e.msg);}
+                                                                                                                            else { console.log(e);
+                                                                                                                            var redirect=getCookie("redirect"); window.location=redirect;
+                                                                                                                            }}
                                                                                                                             }).post({'email':email,'password':password});
                                                                                          });
                                                               $('cancelerr').addEvent('click', function(){
