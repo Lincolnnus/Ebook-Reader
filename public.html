@@ -4,264 +4,37 @@
         <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
                 <title>Public Books</title>
-                <style type="text/css">
-                    .toolbar {
-                        position: absolute;
-                        color:white;
-                        left: 0;
-                        right: 0;
-                        height: 32px;
-                        z-index: 9999;
-                        cursor: default;
-                        background-image: url(images/texture.png),
-                        -webkit-linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
-                        background-image: url(images/texture.png),
-                        -moz-linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
-                        background-image: url(images/texture.png),
-                        -ms-linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
-                        background-image: url(images/texture.png),
-                        -o-linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
-                        background-image: url(images/texture.png),
-                        linear-gradient(hsla(0,0%,32%,.99), hsla(0,0%,27%,.95));
-                        border-left: 1px solid hsla(0,0%,0%,.5);
-                        box-shadow: inset 1px 0 0 hsla(0,0%,100%,.08),
-                        inset 0 1px 1px hsla(0,0%,0%,.15),
-                        inset 0 -1px 0 hsla(0,0%,100%,.05),
-                        0 1px 0 hsla(0,0%,0%,.15),
-                        0 1px 1px hsla(0,0%,0%,.1);
-                    }
-                    #toolbarRight {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                    }
-                    #toolbarLeft {
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                    }
-                    #login{
-                        width:50px;
-                    }
-                    #toolbarCenter {
-                        position: absolute;
-                        top: 0;
-                        left: 50%;
-                    }
-                    body {
-                        height: 100%;
-                        background-color: #404040;
-                        background-image: url(images/texture.png);
-                    }
-                    #viewerContainer {
-                        overflow: auto;
-                        box-shadow: inset 1px 0 0 hsla(0,0%,100%,.05);
-                        padding-top: 30px;
-                        position: absolute;
-                        top: 32px;
-                        right: 0;
-                        bottom: 0;
-                        left: 0;
-                    }
-                    #email{width:80%;
-                        float:right;}
-                    #password{width:80%;
-                        float:right;}
-                    #confirmLogin{
-                        float:right;
-                        width:100px;
-                    }
-                    #loginWrapper {
-                        background-color: #F9F9F9;
-                        border: 1px solid #6B7B95;
-                        color: #000;
-                        float: left;
-                        height: 30%;
-                        padding: 10px;
-                        width: 30%;
-                        position:absolute;
-                        left:30%;
-                        top:20%;
-                        z-index:2;
-                    }
-                    #errorWrapper {
-                        background-color: #F9F9F9;
-                        border: 1px solid #6B7B95;
-                        color: #000;
-                        float: left;
-                        height: 30%;
-                        padding: 10px;
-                        width: 30%;
-                        position:absolute;
-                        left:30%;
-                        top:20%;
-                        z-index:3;
-                    }
-                    #social{
-                        float:right;
-                    }
-                    .loginAction{font-size:80%;}
-                    #facebook{
-                        background-image:url("images/facebook_login.png");
-                        width:65px;
-                        float:right;
-                        height:25px;
-                    }
-                    #bookdetail {
-                        border: 1px solid #6B7B95;
-                        background-color:#F9F9F9;
-                        z-index:10;
-                        position:absolute;
-                    }
-                    .bookmeta{
-                        position:absolute;
-                        width:30%;
-                    }
-                    .selected{
-                        background-color: #F9F9F9;
-                    }
-                    </style>
                 <!--Get mootools-->
                 <script src="js/mootools-core.js" type="text/javascript"></script>
                 <script src="js/mootools-more.js" type="text/javascript"></script>
                 <script src="js/cookie.js"></script>
+                <script src="js/main.js"></script>
+                <link href="css/index.css" rel="stylesheet" type="text/css">
                 <script type="text/javascript">
-                    var IP="api";
-                    var thumbnailurl="pdfimage/";
-                    var pdfurl="pdf";
-                    var readurl="read.html";
-                    function getParameterByName(name)
-                    {
-                        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-                                              var regexS = "[\\?&]" + name + "=([^&#]*)";
-                                              var regex = new RegExp(regexS);
-                                              var results = regex.exec(window.location.search);
-                                              if(results == null)
-                                              return "";
-                                              else
-                                              return decodeURIComponent(results[1].replace(/\+/g, " "));
-                                              }
-                                              function getStoreBooks()
-                                              {
-                                              var jsonRequest = new Request.JSON({url: 'api/store.php', onSuccess: function(upload){
-                                                                                 for(var i=0;i<upload.length;i++)
-                                                                                 {
-                                                                                 var book=upload[i];
-                                                                                 // Creating an new anchor with an Object
-                                                                                 var wid=window.innerWidth;
-                                                                                 var hei=window.innerHeight;
-                                                                                 var newbook = new Element('li', {
-                                                                                                           id:i,
-                                                                                                           'class': 'bookmeta',
-                                                                                                           html:'',
-                                                                                                           styles: {
-                                                                                                           'background-image':'url('+thumbnailurl+book.thumbnail+')',
-                                                                                                           'background-size':wid/6+'px',
-                                                                                                           'background-repeat':'no-repeat',
-                                                                                                           'width':wid/5,
-                                                                                                           'height':hei/3,
-                                                                                                           'display': 'block',
-                                                                                                           'left':(i%4)*wid/4+wid/30,
-                                                                                                           'top':Math.floor(i/4)*hei/2+hei/30,
-                                                                                                           },
-                                                                                                           events: {
-                                                                                                           click: function(){
-                                                                                                           setCookie('bid',upload[this.id].bid);
-                                                                                                           window.location=readurl;
-                                                                                                           },
-                                                                                                           mouseover: function(e){
-                                                                                                           e.stop(e);
-                                                                                                           $('booktitle').set('html','Title:'+upload[this.id].title);
-                                                                                                           $('bookauthor').set('html','Author:'+upload[this.id].author);
-                                                                                                           $('bookdetail').show();
-                                                                                                           $('bookdetail').setStyles({
-                                                                                                                                     'width':this.style.width,
-                                                                                                                                     'height':this.style.height,
-                                                                                                                                     'left':e.event.clientX,
-                                                                                                                                     'top':e.event.clientY
-                                                                                                                                     });	
-                                                                                                           },
-                                                                                                           mouseleave:function()
-                                                                                                           {
-                                                                                                           $('bookdetail').hide();
-                                                                                                           }			
-                                                                                                           }
-                                                                                                           }).inject($("books"));
-                                                                                 }
-                                                                                 }}).get();
-                                              }
-                                              function userLogout()
-                                              {
-                                              deleteAllCookies();
-                                              window.location.reload();
-                                              }
-                                              
-                                              window.addEvent('domready', function() {
-                                                              $('library').addEvent('click',function(){window.location="index.html";});
-                                                              $('errorWrapper').hide();
-                                                              $('loginWrapper').hide();
-                                                              var error=getParameterByName("error");
-                                                              if (error=="login"){$('loginWrapper').show();}
-                                                              else if(error!=""){$('errorWrapper').show();$('errormsg').set('html',error);}
-                                                              $('facebook').addEvent('click',function(){setCookie("redirect",window.location.href); window.location='api/fb.php';});
-                                                              if(checkCookie('uid')!=""){ 
-                                                              $('login').set('html',''); 
-                                                              var myimg=new Element('img',{'width':'30px','src':getCookie('thumbnail')}).inject($('login'));
-                                                              var action=new Element('div').inject('login');
-                                                              
-                                                              var myaccount=new Element('div',{'class':'loginAction','html':'Account'}).inject(action);
-                                                              myaccount.addEvent('click',function(){window.location="account.html"});
-                                                              var logout=new Element('div',{'class':'loginAction','html':'logout'}).inject(action);
-                                                              logout.addEvent('click',function(){userLogout();});
-                                                              action.hide();
-                                                              myimg.addEvent('click',function(){
-                                                                             action.show();
-                                                                             });
-                                                              action.addEvent('mouseleave',function(){action.hide();});
-                                                              }
-                                                              else { $('loginButton').addEvent('click', function(){
-                                                                                               $('loginWrapper').show();
-                                                                                               $('cancel').show();
-                                                                                               });
-                                                              $('cancel').addEvent('click', function(){
-                                                                                   $('loginWrapper').hide();
-                                                                                   $(this).hide();
-                                                                                   });
-                                                              }
-                                                              getStoreBooks();
-                                                              $('bookdetail').hide();
-                                                              
-                                                              
-                                                              $('confirmLogin').addEvent('click', function(){
-                                                                                         setCookie('redirect',window.location.href);
-                                                                                         var email=$('email').value;
-                                                                                         var password=$('password').value;
-                                                                                         var jsonRequest = new Request.JSON({url: 'api/login.php',
-                                                                                                                            onSuccess: function(e){
-                                                                                                                            if(e.code)
-                                                                                                                            {$('cancelerr').show(); $('errorWrapper').show(); $('errormsg').set('html',e.msg);}
-                                                                                                                            else { console.log(e);
-                                                                                                                            var redirect=getCookie("redirect"); window.location=redirect;
-                                                                                                                            }}
-                                                                                                                            }).post({'email':email,'password':password});
-                                                                                         });
-                                                              $('cancelerr').addEvent('click', function(){
-                                                                                    $('errorWrapper').hide();
-                                                                                    $(this).hide();
-                                                                                    });
-                                                              });
-                                              </script>
+                    window.addEvent('domready', function() {
+                                    bookDetailHide();
+                                    errorShow();
+                                    storeShow();
+                                    });
+              </script>
     </head>
     <body>
         <div>
             <div id="outerContainer">
                 <div class="toolbar">
                     <div id="toolbarLeft">
-                        <button id="library">library</button>
+                        <button onclick="gotoLibrary()">Library</button>
                     </div>
                     <div id="toolbarRight">
                         <div id="login" title="Login">
-                            <button id="loginButton"> Login</button>
+                            <button id="loginButton" onclick="loginShow()"> Login</button>
+                        </div>
+                        <div id="logout" title="logout">
+                            <img id="thumbnail" width="30px" onclick="actionShow()">
+                            <div id="action">
+                                <p id="account" onclick="gotoAccount()">Account</p>
+                                <p onclick="userLogout()">Logout</p>
+                            </div>
                         </div>
                     </div>
                     <div id="toolbarCenter">
@@ -270,7 +43,7 @@
                 </div>
                 <div id="viewerContainer">
                     <div id="loginWrapper">
-                        <a style="float:right;" id="cancel">Close</a>
+                        <button class="closeButton" onclick="loginHide()"></button>
                         <br>
                         <fieldset>
                             <legend>Login</legend>
@@ -278,18 +51,19 @@
                             <div style="float:right;">
                                 <input type="text" name="email" placeholder="Email" id="email">
                                     <input type="password" name="password" placeholder="Password" id="password">
-                                        <button id="confirmLogin">Login</button>
-                                        <button id="facebook"></button>
+                                        <button id="confirmLogin" onclick="standardLogin()">Login</button>
+                                        <button id="facebook" onclick="fbLogin()"></button>
                                         </div>
                             <br>
                             <div style="float:right;font-size:40%">
+                                <input type="checkbox" name="remember" id="remember">Remember me
                                 <a href="forgot.html">Forgot Password</a> or
                                 <a href="register.html">Register</a>
                             </div>
                         </fieldset>
                     </div>
                     <div id="errorWrapper">
-                        <a style="float:right;" id="cancelerr">Close</a>
+                        <button class="closeButton" onclick="errorHide()"></button>
                         <br>
                         <fieldset>
                             <legend>Error</legend>

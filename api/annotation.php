@@ -4,11 +4,13 @@ include_once("connection.php");
 switch ($_SERVER['REQUEST_METHOD']) 
 {
     case 'GET':
-	     if((isset($_GET["bid"]))&&(isset($_GET["pid"])))
+	     if((isset($_GET['bid']))&&(isset($_GET['pid'])))
             {
 		   if (isset($_GET['uid']))
 		   {
-			  $uid=$_GET['uid'];$bid=$_GET["bid"]; $pid=$_GET["pid"];
+			  $uid=$_GET['uid'];
+              $bid=$_GET['bid'];
+              $pid=$_GET['pid'];
 			  if(isset($_GET['friends'])){
 				if(($_GET['friends'])=='fb')
 				{
@@ -28,7 +30,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 			 }
 		    }else
 		    {
-			    $bid=$_GET["bid"]; $pid=$_GET["pid"];
+			    $bid=$_GET['bid']; $pid=$_GET['pid'];
 			    $query = sprintf("SELECT * FROM `Annotation` WHERE bid='%s' AND pid='%s'", mysql_real_escape_string($bid),mysql_real_escape_string($pid));
 			    $res= mysql_query($query);
 		    }
@@ -92,7 +94,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 			else echo json_encode("update success");
 			break;
 			case 'delete':
-			$query = sprintf("DELETE FROM `Annotation` WHERE uid='%s' AND bid='%s' AND pid='%s' AND aid='%s'",
+			$query = sprintf("UPDATE `Annotation` SET status=1 WHERE uid='%s' AND bid='%s' AND pid='%s' AND aid='%s'",
 			        mysql_real_escape_string($uid),
 				mysql_real_escape_string($annotation["bid"]),
 				mysql_real_escape_string($annotation["pid"]),
@@ -106,8 +108,9 @@ switch ($_SERVER['REQUEST_METHOD'])
 			else echo json_encode("delete success");
 			break;
 			case 'create':
-			$query = sprintf("INSERT INTO `Annotation`(uid,bid,pid,startx,starty,width,height,type,text,points,access,color,thumbnail) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
-			        mysql_real_escape_string($uid),
+			$query = sprintf("INSERT INTO `Annotation`(aid,uid,bid,pid,startx,starty,width,height,type,text,points,access,color) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",
+                mysql_real_escape_string($annotation["aid"]),
+                mysql_real_escape_string($uid),
 				mysql_real_escape_string($annotation["bid"]),
 				mysql_real_escape_string($annotation["pid"]),
 				mysql_real_escape_string($annotation["startx"]),
@@ -118,8 +121,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 				mysql_real_escape_string($annotation["text"]),
 				mysql_real_escape_string($annotation["points"]),
 				mysql_real_escape_string($annotation["access"]),
-				mysql_real_escape_string($annotation["color"]),
-				mysql_real_escape_string($annotation["thumbnail"]));
+				mysql_real_escape_string($annotation["color"]));
 			$result = mysql_query($query);
 			if (!$result) {
 			    $message  = 'Invalid query: ' . mysql_error() . "\n";

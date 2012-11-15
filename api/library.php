@@ -9,7 +9,7 @@ switch ($_SERVER['REQUEST_METHOD'])
 	$token=$_GET["token"];
 	if(authentication($uid,$token))
 	{
-		    $query = sprintf("SELECT * FROM `Book` WHERE uploader='%s'",mysql_real_escape_string($uid));
+		    $query = sprintf("SELECT * FROM `Book` WHERE uid='%s'",mysql_real_escape_string($uid));
 		    $result = mysql_query($query);
 		    if (!$result) {
 			    $message  = 'Invalid query: ' . mysql_error() . "\n";

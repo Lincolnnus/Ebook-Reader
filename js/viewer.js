@@ -2,6 +2,7 @@
 /* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */
 
 'use strict';
+var editMode=0;
 var kDefaultURL = 'http://localhost/viewer/pdf/demo1.pdf';
 var kDefaultScale = 'auto';
 var kDefaultScaleDelta = 1.1;
@@ -597,7 +598,7 @@ var PDFView = {
       this.fallback();
       return;
     }
-    var errorWrapper = document.getElementById('errorWrapper');
+   /* var errorWrapper = document.getElementById('errorWrapper');
     errorWrapper.removeAttribute('hidden');
 
     var errorMessage = document.getElementById('errorMessage');
@@ -625,7 +626,7 @@ var PDFView = {
     lessInfoButton.setAttribute('hidden', 'true');
     errorMoreInfo.value = moreInfoText;
 
-    errorMoreInfo.rows = moreInfoText.split('\n').length - 1;
+    errorMoreInfo.rows = moreInfoText.split('\n').length - 1;*/
   },
 
   progress: function pdfViewProgress(level) {
@@ -643,8 +644,8 @@ var PDFView = {
 
     this.pdfDocument = pdfDocument;
 
-    var errorWrapper = document.getElementById('errorWrapper');
-    errorWrapper.setAttribute('hidden', 'true');
+  /*  var errorWrapper = document.getElementById('errorWrapper');
+    errorWrapper.setAttribute('hidden', 'true');*/
 
     var loadingBox = document.getElementById('loadingBox');
     loadingBox.setAttribute('hidden', 'true');
@@ -1814,94 +1815,6 @@ var TextLayerBuilder = function textLayerBuilder(textLayerDiv) {
     this.textDivs.push(textDiv);
   };
 };
-
-window.addEventListener('load', function webViewerLoad(evt) {
-    PDFView.initialize();
-    var params = PDFView.parseQueryString(document.location.search.substring(1));
-    bid = getCookie("bid");
-    if(bid==""){window.location="public.html?error=no book selected";}
-    else{
-  var jsonRequest = new Request.JSON({url: 'api/book.php', 
-		onSuccess: function(e){ 
-      var file=e.file;//get file from ajax
- /* if (PDFJS.isFirefoxExtension || !window.File || !window.FileReader ||
-      !window.FileList || !window.Blob) {
-    document.getElementById('openFile').setAttribute('hidden', 'true');
-  } else {
-    document.getElementById('fileInput').value = null;
-  }
-
-  // Special debugging flags in the hash section of the URL.
-  var hash = document.location.hash.substring(1);
-  var hashParams = PDFView.parseQueryString(hash);
-
-  if ('disableWorker' in hashParams)
-    PDFJS.disableWorker = (hashParams['disableWorker'] === 'true');
-
-  if (!PDFJS.isFirefoxExtension) {
-    var locale = navigator.language;
-    if ('locale' in hashParams)
-      locale = hashParams['locale'];
-    mozL10n.language.code = locale;
-  }
-
-  if ('disableTextLayer' in hashParams)
-    PDFJS.disableTextLayer = (hashParams['disableTextLayer'] === 'true');
-
-  if ('pdfBug' in hashParams &&
-      (!PDFJS.isFirefoxExtension || FirefoxCom.requestSync('pdfBugEnabled'))) {
-    PDFJS.pdfBug = true;
-    var pdfBug = hashParams['pdfBug'];
-    var enabled = pdfBug.split(',');
-    PDFBug.enable(enabled);
-    PDFBug.init();
-  }
-
-  if (!PDFJS.isFirefoxExtension ||
-    (PDFJS.isFirefoxExtension && FirefoxCom.requestSync('searchEnabled'))) {
-    document.querySelector('#viewSearch').classList.remove('hidden');
-  }
-
-  if (!PDFView.supportsPrinting) {
-    document.getElementById('print').classList.add('hidden');
-  }
-
-  if (!PDFView.supportsFullscreen) {
-    document.getElementById('fullscreen').classList.add('hidden');
-  }
-
-  // Listen for warnings to trigger the fallback UI.  Errors should be caught
-  // and call PDFView.error() so we don't need to listen for those.
-  PDFJS.LogManager.addLogger({
-    warn: function() {
-      PDFView.fallback();
-    }
-  });
-
-  var mainContainer = document.getElementById('mainContainer');
-  var outerContainer = document.getElementById('outerContainer');
-  mainContainer.addEventListener('transitionend', function(e) {
-    if (e.target == mainContainer) {
-      var event = document.createEvent('UIEvents');
-      event.initUIEvent('resize', false, false, window, 0);
-      window.dispatchEvent(event);
-      outerContainer.classList.remove('sidebarMoving');
-    }
-  }, true);
-
-  document.getElementById('sidebarToggle').addEventListener('click',
-    function() {
-      this.classList.toggle('toggled');
-      outerContainer.classList.add('sidebarMoving');
-      outerContainer.classList.toggle('sidebarOpen');
-      PDFView.sidebarOpen = outerContainer.classList.contains('sidebarOpen');
-      PDFView.renderHighestPriority();
-    });*/
-      PDFView.open(file, 0);
-		}}).get({'bid': bid, 'token': 'abc'});
-                        }
-}, true);
-
 function updateViewarea() {
   if (!PDFView.initialized)
     return;
@@ -2107,17 +2020,13 @@ window.addEventListener('keydown', function keydown(evt) {
     curElement = curElement.parentNode;
   }
 
-  if (cmd == 0) { // no control key pressed at all.
+  if ((cmd == 0)&&(!editMode)) { // no control key pressed at all.
     switch (evt.keyCode) {
       case 37: // left arrow
-      case 75: // 'k'
-      case 80: // 'p'
         PDFView.page--;
         handled = true;
         break;
       case 39: // right arrow
-      case 74: // 'j'
-      case 78: // 'n'
         PDFView.page++;
         handled = true;
         break;
