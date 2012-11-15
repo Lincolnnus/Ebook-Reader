@@ -55,7 +55,7 @@ if ($_REQUEST) {
 	    	    }else if(mysql_num_rows($result)<=0){
 			    $password=uniqid(mt_rand(), true);
 			    $token=uniqid(mt_rand().mt_rand(),true);
-			    $query = sprintf("INSERT INTO `User`(email,password,fbid,name,avatar_url,gender,locale,city,birthday,website,token) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",mysql_real_escape_string($user_profile["email"]),mysql_real_escape_string($password),mysql_real_escape_string($user),mysql_real_escape_string($user_profile["name"]),mysql_real_escape_string("https://graph.facebook.com/".$user."/picture"),mysql_real_escape_string($user_profile["gender"]),mysql_real_escape_string($locale),mysql_real_escape_string($user_profile["location"]["name"]),mysql_real_escape_string($user_profile["birthday"]),mysql_real_escape_string("https://www.facebook.com/".$user),$token);
+			    $query = sprintf("INSERT INTO `User`(email,password,fbid,uname,thumbnail,gender,locale,city,birthday,token) VALUES('%s','%s','%s','%s','%s','%s','%s','%s','%s','%s')",mysql_real_escape_string($user_profile["email"]),mysql_real_escape_string($password),mysql_real_escape_string($user),mysql_real_escape_string($user_profile["name"]),mysql_real_escape_string("https://graph.facebook.com/".$user."/picture"),mysql_real_escape_string($user_profile["gender"]),mysql_real_escape_string($locale),mysql_real_escape_string($user_profile["location"]["name"]),mysql_real_escape_string($user_profile["birthday"]),$token);
 			    $result = mysql_query($query);
 			    if (!$result) {
 				    $message  = 'Invalid query: ' . mysql_error() . "\n";
@@ -70,7 +70,7 @@ if ($_REQUEST) {
 					$friends=$friends["data"];
 					for($i=0;$i<count($friends);$i++)
 					{
-						$query=sprintf("INSERT INTO `FBfriends` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
+						$query=sprintf("INSERT INTO `FBfriend` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
 						$result = mysql_query($query);
 					}
 				}
@@ -103,7 +103,7 @@ if ($_REQUEST) {
 			        $friends=$friends["data"];
 				for($i=0;$i<count($friends);$i++)
 				{
-					$query=sprintf("INSERT INTO `FBfriends` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
+					$query=sprintf("INSERT INTO `FBfriend` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
 					$result = mysql_query($query);
 				}
 				
@@ -116,23 +116,19 @@ if ($_REQUEST) {
 	    }
     if(isset($_POST["remember"])&&($_POST["remember"]==1))
     {$expire=360000;}else{$expire=3600;}
-    $path="/viewer";
+    $path=SERVER_PATH;
     $domain="";
     if ($my_profile)
     {
         setcookie('uid', $my_profile["uid"],time()+$expire,$path, $domain,0,0);
-        setcookie('name',$my_profile["name"],time()+$expire, $path, $domain, 0,0);
+        setcookie('uname',$my_profile["uname"],time()+$expire, $path, $domain, 0,0);
         setcookie('token',$my_profile["token"],time()+$expire, $path, $domain, 0,0);
-        setcookie('thumbnail',$my_profile["avatar_url"],time()+$expire, $path, $domain,0, 0);
-        if(isset($_COOKIE["redirect"]))
-        {header("Location:".$_COOKIE["redirect"]);}
-        else {header("Location:".SERVER_URL."/index.html");}
-        
+        setcookie('thumbnail',$my_profile["thumbnail"],time()+$expire, $path, $domain,0, 0);
+        if(isset($_COOKIE['redirect'])) header("Location:".$_COOKIE['redirect']);
+        else header("Location:".SERVER_URL."/index.html");
     }
-    else {
-        if (isset($_COOKIE["redirect"]))
-        {   header("Location:".$_COOKIE["redirect"]);}
-        else {header("Location:".SERVER_URL."/public.html?error=Error With Facebook Login");}
+    else {  if(isset($_COOKIE['redirect'])) header("Location:".$_COOKIE['redirect']."?error=Error With Facebook Login");
+        header("Location:".SERVER_URL."/public.html?error=Error With Facebook Login");
     }
 } else {
   //echo 'Please Register';

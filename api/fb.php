@@ -69,7 +69,7 @@ $user = $facebook->getUser();
                             $friends=$friends["data"];
                             for($i=0;$i<count($friends);$i++)
                             {
-                                $query=sprintf("INSERT INTO `FBfriends` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
+                                $query=sprintf("INSERT INTO `FBfriend` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
                                 $result = mysql_query($query);
                             }
                         }
@@ -91,7 +91,7 @@ $user = $facebook->getUser();
                             $friends=$friends["data"];
                             for($i=0;$i<count($friends);$i++)
                             {
-                                $query=sprintf("INSERT INTO `FBfriends` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
+                                $query=sprintf("INSERT INTO `FBfriend` (fbid1,fbid2) VALUES('%s','%s')",mysql_real_escape_string($user),mysql_real_escape_string($friends[$i]["id"]));
                                 $result = mysql_query($query);
                             }
                         }//If the facebook user has already registered.

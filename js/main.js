@@ -328,6 +328,59 @@ function inforShow()
         $('inforWrapper').hide();
     }
 }
+function showUser()
+{
+    loginHide();
+    $('inforWrapper').show();
+    getUserProfile();
+}
+function getUserProfile()
+{
+    var uid=getParameterByName('uid');
+    var jsonRequest = new Request.JSON({url: 'api/account.php',
+                                       onSuccess: function(e){
+                                       if(e.response_type=='succeed')
+                                       { displayUser(e.response_message);}
+                                       else {showError(e.response_message);}
+                                       }
+                                       }).get({'uid':uid});
+    
+}
+function displayUser(user)
+{
+    $('mythumbnail').set('html','<img width="50px" src="'+user.thumbnail+'">');
+    $('mythumbnail').addEvent('click',function(){editProfile('thumbnail')});
+    $('gender').set('html',user.gender);
+    $('uname').set('html',user.uname);
+    $('city').set('html',user.city);
+    
+}
+function addFriend()
+{
+    if(checkCookie('uid'))
+    {
+        var fid1=getCookie('uid');
+        var fid2=getParameterByName('uid');
+        if(fid1==fid2)
+        {
+            showError('Cannot Add Yourself as Friends');
+        }else
+        {
+            var jsonRequest = new Request.JSON({url: 'api/friend.php',
+                                               onSuccess: function(e){
+                                               if(e.response_type=='succeed')
+                                               { alert('success');}
+                                               else {showError(e.response_message);}
+                                               }
+                                               }).post({'fid1':fid1,'fid2':fid2});
+        }
+    }
+    else
+    {
+        loginShow();
+    }
+    
+}
 var color="blue";
 var annots=new Array();
 function getSelected()//get selected text

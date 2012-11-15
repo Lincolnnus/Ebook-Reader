@@ -32,5 +32,24 @@
             if(isset($friend)) echo json_encode(array_unique($friend));
             else echo json_encode(array());
             break;
+        case 'POST':
+            if((isset($_POST['fid1']))&&(isset($_POST['fid2'])))
+            {
+                $fid1=$_POST['fid1'];
+                $fid2=$_POST['fid2'];
+                $query = sprintf("INSERT INTO `Friend` (fid1,fid2) VALUES('%s','%s')",mysql_real_escape_string($fid1),mysql_real_escape_string($fid2));
+                $result = mysql_query($query);
+                if (!$result) {
+                    $error_message="Error Creating Friends";
+                }else
+                {
+                    $success_message="Success Creating Friends";
+                    
+                }
+            }
+            
+            if (isset($error_message)) echo json_encode(Array('response_type'=>'fail','response_message'=>$error_message));
+            if (isset($success_message)) echo json_encode(Array('response_type'=>'succeed','response_message'=>$success_message));
+            break;
     }
 ?>

@@ -14,7 +14,7 @@
                         errorShow();
                         editHide();
                         loginHide();
-                        inforShow();
+                        showUser();
                         });
 
 	    </script>
@@ -27,7 +27,7 @@
                         <button id="library" onclick="gotoLibrary()">Library</button>
 		</div>
 		<div id="toolbarCenter">
-			My Account
+			User Information
 		</div>
 		<div id="toolbarRight">
 			<div id="login" title="Login">
@@ -86,42 +86,20 @@
 					<tr>
 					<td>Name:</td>
 					<td id="uname"></td>
-                    <td id="unameEdit">Change</td>
 					</tr>
 					<tr>
 					<td>Gender:</td>
 					<td id="gender"></td>
-                    <td id="genderEdit">Change</td>
-					</tr>
-					<tr>
-					<td>Birthday:</td>
-					<td id="birthday"></td>
-                    <td id="birthdayEdit">Change</td>
 					</tr>
 					<tr>
 					<td>City:</td>
 					<td id="city"></td>
-                    <td id="cityEdit">Change</td>
 					</tr>
-					<tr>
-						<td>Facebook:</td>
-						<td id='fbid'></td>
-                        <td id="fbidEdit">Change</td>
-					</tr>
-					<tr>
-						<td>Language:</td>
-						<td id='locale'></td>
-                        <td id="localeEdit">Change</td>
-					</tr>
-					<tr>
-						<td>TimeZone:</td>
-						<td id='timezone'></td>
-                        <td id="timezoneEdit">Change</td>
-					</tr>
-					<tr>
-						<td>Register Date:</td>
-						<td id='register_date'></td>
-					</tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <button onclick="addFriend();">Add As Friend</button></td>
+                    </tr>
 					</table>
 				</center>
 			</fieldset>
