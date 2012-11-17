@@ -12,7 +12,9 @@ for (i=0;i<ARRcookies.length;i++)
     }
   }
 }
-
+function deleteCookie(name) {
+    setCookie(name,"",-1);
+}
 function setCookie(c_name,value,exdays)
 {
 	var exdate=new Date();

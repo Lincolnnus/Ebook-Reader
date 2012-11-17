@@ -31,7 +31,7 @@ function uploadFileHide()//Hide the upload File Wrapper
 {
     $('uploadfileWrapper').hide();
 }
-function libraryShow()//Show the Login Wrapper
+function libraryShow()//Get the uploaded books
 {
     if(checkCookie('uid')!=""){
         $('login').hide();
@@ -43,7 +43,7 @@ function libraryShow()//Show the Login Wrapper
         loginShow();
     }
 }
-function storeShow()
+function storeShow()//Show the public books
 {
     if(checkCookie('uid')!=""){
         $('login').hide();
@@ -94,16 +94,16 @@ function actionShow()//Action After Login
 {
     $('action').show();
 }
-function bookDetailHide()
+function bookDetailHide()//Hide Book Details
 {
     $('bookdetail').hide();
 }
 function userLogout()//Login Out
 {
-    if(checkCookie("bid"))
-    {var bid=getCookie("bid");}
-    deleteAllCookies();
-    if(bid){setCookie("bid",bid)};
+    deleteCookie('uid');
+    deleteCookie('thumbnail');
+    deleteCookie('uname');
+    deleteCookie('token');
     window.location.reload();
 }
 function saveFileShow()//Show the Save File Wrapper
@@ -188,7 +188,7 @@ function getUploadBooks()//Get Upload Books
                                        }
                                        }}).get({'uid': uid, 'token': token});
 }
-function getStoreBooks()
+function getStoreBooks()//Get Public Books
 {
     var jsonRequest = new Request.JSON({url: 'api/store.php', onSuccess: function(upload){
                                        for(var i=0;i<upload.length;i++)
@@ -239,7 +239,7 @@ function getStoreBooks()
 }
 //above are functions for public.html and index.html
 //below are functions for account.html
-function getMyProfile()
+function getMyProfile()//Get Login User's Profile
 {
     var uid=getCookie('uid');
     var token=getCookie('token');
@@ -252,13 +252,15 @@ function getMyProfile()
                                        }).post({'uid':uid,'token':token});
     
 }
-function showError(error)
+//Show Errors
+function showError(error)//Show Errors
 {
     console.log(error);
     $('errorWrapper').show();
     $('errormsg').set('html',error);
 }
-function displayProfile(user)
+
+function displayProfile(user)//Display User Profile
 {
     $('mythumbnail').set('html','<img width="50px" src="'+user.thumbnail+'">');
     $('mythumbnail').addEvent('click',function(){editProfile('thumbnail')});
@@ -280,7 +282,7 @@ function displayProfile(user)
     $('timezoneEdit').addEvent('click',function(){editProfile('timezone');});
     
 }
-function addFBfriend()
+function addFBfriend()//Add Facebook Friend
 {
     $('editWrapper').show();
     $('editField').set('html','To connect with your facebook account,Please Make Sure Your Email Address is Consistent with Your Facebook Email Address');
@@ -289,7 +291,7 @@ function addFBfriend()
                         window.location="api/fb.php";
                         });
 }
-function editProfile(element)
+function editProfile(element)//Delete Profile
 {
     
     var uid=getCookie('uid');
@@ -311,11 +313,11 @@ function editProfile(element)
                         });
     
 }
-function editHide()
+function editHide()//Hide Edit Wrapper
 {
     $('editWrapper').hide();
 }
-function inforShow()
+function inforShow()//Show Login User's Information
 {
     if(checkCookie('uid')!=""){
         $('login').hide();
@@ -328,13 +330,13 @@ function inforShow()
         $('inforWrapper').hide();
     }
 }
-function showUser()
+function showUser()//Show User
 {
     loginHide();
     $('inforWrapper').show();
     getUserProfile();
 }
-function getUserProfile()
+function getUserProfile()//Get User Profile
 {
     var uid=getParameterByName('uid');
     var jsonRequest = new Request.JSON({url: 'api/account.php',
@@ -346,7 +348,7 @@ function getUserProfile()
                                        }).get({'uid':uid});
     
 }
-function displayUser(user)
+function displayUser(user)//Display User Information
 {
     $('mythumbnail').set('html','<img width="50px" src="'+user.thumbnail+'">');
     $('mythumbnail').addEvent('click',function(){editProfile('thumbnail')});
@@ -355,12 +357,13 @@ function displayUser(user)
     $('city').set('html',user.city);
     
 }
-function addFriend()
+
+function addFriend()//Add the User as a friend
 {
     if(checkCookie('uid'))
     {
-        var fid1=getCookie('uid');
-        var fid2=getParameterByName('uid');
+        var fid1=getParameterByName('uid');
+        var fid2=getCookie('uid');
         if(fid1==fid2)
         {
             showError('Cannot Add Yourself as Friends');
@@ -368,8 +371,11 @@ function addFriend()
         {
             var jsonRequest = new Request.JSON({url: 'api/friend.php',
                                                onSuccess: function(e){
+                                               var uid=getCookie('uid');
+                                               var thumbnail=getCookie('thumbnail');
+                                               var uname=getCookie('uname');
                                                if(e.response_type=='succeed')
-                                               { alert('success');}
+                                               {  var newFriend=new Element('img',{'width':'50px','src':thumbnail,'title':uname,'onclick':'gotoUser('+uid+')'}).inject($('friends'));}
                                                else {showError(e.response_message);}
                                                }
                                                }).post({'fid1':fid1,'fid2':fid2});
@@ -380,6 +386,37 @@ function addFriend()
         loginShow();
     }
     
+}
+//Go to User Page
+function gotoUser(uid)
+{
+    window.location='user.html?uid='+uid;
+}
+//Display Friends in the User Page
+function displayFriends()
+{
+    var uid=getParameterByName('uid');
+    var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
+                                       var friends=e;
+                                       showUserFriends(friends);
+                                       }}).get({'uid':uid});
+}
+//Diaplay my friends
+function displayMyFriends()
+{
+    var uid=getCookie('uid');
+    var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
+                                       var friends=e;
+                                       showUserFriends(friends);
+                                       }}).get({'uid':uid});
+}
+//Show the User Friends in the User Page
+function showUserFriends(friends)
+{
+    for(var i=0;i<friends.length;i++)
+    {
+        var newFriend=new Element('img',{'width':'50px','src':friends[i].thumbnail,'title':friends[i].uname,'onclick':'gotoUser('+friends[i].uid+')'}).inject($('friends'));
+    }
 }
 var color="blue";
 var annots=new Array();
@@ -398,7 +435,8 @@ function getAnnot()//get annotations
 {
     var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){annots=e;}}).get({'bid': bid});
 }
-var annotPage=null;
+var annotPage=null;//The page that the annotations has already shown
+//displayAnnotation
 function displayAnnot(currentPage)
 {
     var bid=getCookie('bid');
@@ -506,6 +544,7 @@ function displayAnnot(currentPage)
         }
     }
 }
+//Share selected text
 function shareText(annot,pageY){
     editMode=1;
     $('annotText').set('html',annot.text.substring(0,30)+'...');
@@ -556,7 +595,7 @@ function shareText(annot,pageY){
                        editMode=0;
                        });
 }
-
+//Edit Annotation
 function editAnnot(id)
 {
     editMode=1;
@@ -601,6 +640,7 @@ function editAnnot(id)
                          editMode=0;
                          });
 }
+//show my annotations
 function showMine()
 {
     var uid=getCookie('uid');
@@ -640,6 +680,7 @@ function showMine()
         
     }
 }
+//highlight current annotation
 function highlight(id)
 {
     var annot=annots[id];
@@ -685,6 +726,7 @@ function highlight(id)
             break;
     }
 }
+//get comments for a paticular annotaion
 function getComments(annot)
 {
     var jsonRequest = new Request.JSON({url: 'api/comment.php', onSuccess: function(e){
@@ -699,6 +741,7 @@ function getComments(annot)
                                        }
                                        }}).get({'uid': annot.uid,'aid':annot.aid,'bid':annot.bid,'pid':annot.pid});
 }
+//show this annotation
 function showThisAnnot(id)
 {
     $('commentController').show();
@@ -760,11 +803,7 @@ function showThisAnnot(id)
                                        }
                                        }}).get({'uid': annot.uid,'aid':annot.aid,'bid':annot.bid,'pid':annot.pid});
 }
-function gotoUser(id)
-{
-    var uid=annots[id].uid;
-    window.location='user.html?uid='+uid;
-}
+//Show Friends Annotations
 function showFriends(friends)
 {
     $("friend").set('html','Friends');
@@ -800,7 +839,7 @@ function showFriends(friends)
                                },
                                click:function()
                                {
-                               gotoUser(this.id);
+                               gotoUser(annots[this.id].uid);
                                }
                                });
                 break;
@@ -808,6 +847,7 @@ function showFriends(friends)
         }
     }
 }
+//Show Public Annotations
 function showPublic()
 {
     $('public').set('html','Public');
@@ -840,7 +880,7 @@ function showPublic()
                                           });
                                },
                                click:function(){
-                               gotoUser(this.id);
+                               gotoUser(annots[this.id].uid);
                                }
                                });
             }
@@ -848,6 +888,7 @@ function showPublic()
         
     }
 }
+//Show the Login or Not
 function readShow()
 {
     if(checkCookie('uid')!=""){
@@ -859,6 +900,7 @@ function readShow()
         $('loginWrapper').hide();
     }
 }
+//Hide Comments
 function hideComment()
 {
     displayAnnot(PDFView.page);
@@ -867,12 +909,14 @@ function hideComment()
     $('commentController').hide();
     //$('commentController').tween('top', [currentTop,window.innerHeight]);
 }
+//Hide the Control Tools
 function hideTools()
 {
     $("toolController").hide();
     $("footer").addEvent('mouseenter',function(){$("toolController").show();});
     $("footer").addEvent('mouseleave',function(){$("toolController").hide();});
 }
+//Get the Book Directory in the Server
 function getBook()
 {
     var bid = getCookie("bid");
@@ -886,6 +930,7 @@ function getBook()
     }
 }
 var commentDrag;
+//Make The Social Controller and Comment Controller Draggable
 function dragController()
 {
     var socialDrag = new Drag('socialController');
@@ -906,6 +951,7 @@ function dragController()
                          socialSlide.toggle();
                          });
 }
+//Choose Color
 function pickcolor()
 {
     var toolController=$("toolController");
@@ -947,6 +993,7 @@ function pickcolor()
 }
 function commentHide()
 {$('commentController').hide();}
+//Save Annotations
 function saveAnnot(annot,top)
 {
     var bid=getCookie('bid');
@@ -984,6 +1031,7 @@ function saveAnnot(annot,top)
                        editMode=0;
                        });
 }
+//Draw Annotations
 function drawShape(type)
 {
     $('commentList').set('value','');
