@@ -8,7 +8,6 @@
                 
                 <link rel="stylesheet" href="css/viewer.css"/>
                 <link rel="stylesheet" href="css/index.css"/>
-                <link rel="stylesheet" href="css/read.css"/>
                 <script type="text/javascript" src="js/compatibility.js"></script> <!-- PDFJSSCRIPT_REMOVE_FIREFOX_EXTENSION -->
                 <script src="js/cookie.js"></script>
                 <!-- This snippet is used in production, see Makefile -->
@@ -223,7 +222,11 @@
             </div>
         </div>
         <div id="footer">
-            <div id="toolController"><img id="rect" src="images/rect.svg" onclick="drawShape('rect')"/><img id="pencil" src="images/pencil.svg" onclick="drawShape('pencil')"/><img id="color" src="images/color.svg" onclick="pickcolor()"/></div>
+            <div id="toolController">
+                <button id="rect" class="toolButton" onclick="drawShape('rect')"></button>
+                <button id="pencil" class="toolButton" onclick="drawShape('pencil')"></button>
+                <button id="color" class="toolButton" onclick="pickcolor()"></button>
+            </div>
         </div>
         <div id="commentController">
             <button class="closeButton" onclick="hideComment()"></button>

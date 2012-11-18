@@ -18,8 +18,9 @@ if (!empty($_REQUEST['captcha'])) {
             {
                 $uname=$_REQUEST['uname'];
                 $token=md5($email).md5($password1);
+                $thumbnail='css/images/thumbnail.gif';
                 include_once("connection.php");
-                $query = sprintf("INSERT INTO `User`(email,password,uname,token) VALUES ('%s','%s','%s','%s')",mysql_real_escape_string($email),mysql_real_escape_string($password1),mysql_real_escape_string($uname),mysql_real_escape_string($token));
+                $query = sprintf("INSERT INTO `User`(email,password,uname,token,thumbnail) VALUES ('%s','%s','%s','%s','%s')",mysql_real_escape_string($email),mysql_real_escape_string($password1),mysql_real_escape_string($uname),mysql_real_escape_string($token),mysql_real_escape_string($thumbnail));
                 $result = mysql_query($query);
                 if (!$result) {
                     $error_message="Error Creating User";

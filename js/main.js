@@ -148,19 +148,22 @@ function getUploadBooks()//Get Upload Books
                                        // Creating an new anchor with an Object
                                        var wid=window.innerWidth;
                                        var hei=window.innerHeight;
+                                       if(i%4==0){var newLine=new Element('li').inject($('books'));
+                                       newshelf=new Element('ul',{styles:{'background-image':'url(css/images/book_shelf.png)','z-index':'-1','background-size':wid*0.9+'px '+hei/4+'px','width':wid*0.9,'height':hei/4,'display':'block','background-repeat':'no-repeat'}}).inject(newLine);}
+                                       var book=upload[i];
                                        var newbook = new Element('li', {
                                                                  id:i,
                                                                  'class': 'bookmeta',
                                                                  html:'',
                                                                  styles: {
                                                                  'background-image':'url('+thumbnailurl+book.cover_url+')',
-                                                                 'background-size':wid/6+'px',
+                                                                 'background-size':wid/7+'px '+hei/5+'px',
                                                                  'background-repeat':'no-repeat',
-                                                                 'width':wid/5,
-                                                                 'height':hei/3,
+                                                                 'width':wid/7,
+                                                                 'height':hei/5,
                                                                  'display': 'block',
-                                                                 'left':(i%4)*wid/4+wid/30,
-                                                                 'top':Math.floor(i/4)*hei/2+hei/30,
+                                                                 'left':(i%4)*wid/4,
+                                                                 'top':Math.floor(i/4)*hei/2+10,
                                                                  },
                                                                  events: {
                                                                  click: function(){
@@ -173,7 +176,7 @@ function getUploadBooks()//Get Upload Books
                                                                  $('bookauthor').set('html','Author:'+upload[this.id].author);
                                                                  $('bookdetail').show();
                                                                  $('bookdetail').setStyles({
-                                                                                           'width':this.style.width,
+                                                                                           'width':this.style.width*0.8,
                                                                                            'height':this.style.height,
                                                                                            'left':e.event.clientX,
                                                                                            'top':e.event.clientY
@@ -191,25 +194,29 @@ function getUploadBooks()//Get Upload Books
 function getStoreBooks()//Get Public Books
 {
     var jsonRequest = new Request.JSON({url: 'api/store.php', onSuccess: function(upload){
+                                       var newshelf;
                                        for(var i=0;i<upload.length;i++)
                                        {
-                                       var book=upload[i];
+                                       
                                        // Creating an new anchor with an Object
                                        var wid=window.innerWidth;
                                        var hei=window.innerHeight;
+                                       if(i%4==0){var newLine=new Element('li').inject($('books'));
+                                       newshelf=new Element('ul',{styles:{'background-image':'url(css/images/book_shelf.png)','z-index':'-1','background-size':wid*0.9+'px '+hei/4+'px','width':wid*0.9,'height':hei/4,'display':'block','background-repeat':'no-repeat'}}).inject(newLine);}
+                                       var book=upload[i];
                                        var newbook = new Element('li', {
                                                                  id:i,
                                                                  'class': 'bookmeta',
                                                                  html:'',
                                                                  styles: {
                                                                  'background-image':'url('+thumbnailurl+book.cover_url+')',
-                                                                 'background-size':wid/6+'px',
+                                                                 'background-size':wid/7+'px '+hei/5+'px',
                                                                  'background-repeat':'no-repeat',
-                                                                 'width':wid/5,
-                                                                 'height':hei/3,
+                                                                 'width':wid/7,
+                                                                 'height':hei/5,
                                                                  'display': 'block',
-                                                                 'left':(i%4)*wid/4+wid/30,
-                                                                 'top':Math.floor(i/4)*hei/2+hei/30,
+                                                                 'left':(i%4)*wid/4,
+                                                                 'top':Math.floor(i/4)*hei/2+10,
                                                                  },
                                                                  events: {
                                                                  click: function(){
@@ -222,7 +229,7 @@ function getStoreBooks()//Get Public Books
                                                                  $('bookauthor').set('html','Author:'+upload[this.id].author);
                                                                  $('bookdetail').show();
                                                                  $('bookdetail').setStyles({
-                                                                                           'width':this.style.width,
+                                                                                           'width':this.style.width*0.8,
                                                                                            'height':this.style.height,
                                                                                            'left':e.event.clientX,
                                                                                            'top':e.event.clientY
@@ -233,7 +240,7 @@ function getStoreBooks()//Get Public Books
                                                                  bookDetailHide();
                                                                  }
                                                                  }
-                                                                 }).inject($("books"));
+                                                                 }).inject(newshelf);
                                        }
                                        }}).get();
 }
@@ -809,7 +816,7 @@ function showFriends(friends)
     $("friend").set('html','Friends');
     for(var j=0;j<friends.length;j++)
     {
-        var newannot=new Element('ul',{'class':'friendList',html:'<img src="'+friends[j].thumbnail+'" title="'+friends[j].uname+'">'}).inject($("friend"));
+        var newannot=new Element('ul',{'class':'friendList',html:'<img width="40px" src="'+friends[j].thumbnail+'" title="'+friends[j].uname+'">'}).inject($("friend"));
         for(var i=0;i<annots.length;i++)
         {
             if ((annots[i].uid==friends[j].uid)&&(annots[i].access!='me'))

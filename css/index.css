@@ -65,20 +65,20 @@
                         width:100px;
                     }
                     #loginWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
-                        height: 30%;
+                        height: 33%;
                         padding: 10px;
-                        width: 30%;
+                        width: 33%;
                         position:absolute;
                         left:30%;
                         top:20%;
                         z-index:100;
                     }
                     #uploadurlWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
@@ -95,11 +95,11 @@
                         font-size:80%;
                     }
                     #savefileWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
-                        height: 30%;
+                        height: 70%;
                         padding: 10px;
                         width: 30%;
                         position:absolute;
@@ -108,7 +108,7 @@
                         z-index:2;
                     }
                     #uploadfileWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
@@ -121,7 +121,7 @@
                         z-index:2;
                     }
                     #errorWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
@@ -134,7 +134,7 @@
                         z-index:200;
                     }
                      #editWrapper {
-                        background-color: #F9F9F9;
+                        background-color: white;
                         border: 1px solid #6B7B95;
                         color: #000;
                         float: left;
@@ -147,8 +147,7 @@
                         z-index:3;
                     }
                      #inforWrapper {
-                        background-color: #6B7B95;
-                        border: 1px solid #6B7B95;
+                        background-color: transparent;
                         color: #000;
                         float: left;
                         height: 70%;
@@ -161,6 +160,22 @@
                     }
                     #social{
                         float:right;
+                    }
+                    #pencil{
+                         background-image:url("images/pencil.svg");
+                    }
+                    #rect{
+                        background-image:url("images/rect.svg");
+                    }
+                    #color{
+                        background-image:url("images/color.svg");
+                    }
+                    .toolButton{
+                        width:20px;
+                        height:20px;
+                        background-color:transparent;
+                        background-repeat: no-repeat;
+                        border:none;
                     }
                     .closeButton{
                         float:right;
@@ -177,16 +192,106 @@
                         float:right;
                         height:25px;
                     }
+                    #commentController
+                    {
+                       background-color:white;
+                    }
                     #bookdetail {
                         border: 1px solid #6B7B95;
-                        background-color:#F9F9F9;
+                        background-color:white;
                         z-index:10;
                         position:absolute;
                     }
                     .bookmeta{
-                        position:absolute;
+                        position:relative;
                         width:30%;
                     }
                     .selected{
                         background-color: #F9F9F9;
+                    }
+                     .comment{
+                        float:center;
+                        color:blue;
+                    }
+                    #footer{
+                        position: fixed;
+                        width:70%;
+                        right:20%;
+                        height:30px;
+                        bottom: 30px;
+                        left:0;
+                        z-index:100;
+                    }
+                    #socialController{
+                        position:absolute;
+                        top:20%;
+                        height:80%;
+                        z-index:50;
+                        background-color:white;
+                    }
+                    #allAnnots{
+                        width:100px;
+                    }
+                    #social{
+                        z-index:50;
+                        width:5px;
+                        background-color:grey;
+                        height:100%;
+                    }
+                    #toolController{
+                        position:absolute;
+                        width:47%;
+                        left:33%;
+                    }
+                    #mine {
+                        margin: 0 50px 0 0;
+                        width:100%;
+                        padding: 0;
+                        float: left;
+                    }
+                    #books li{
+                    display:block;
+                    }
+                    #bookmeta li{
+                    display:block;
+                    }
+                    #bookdetail li {
+                        display: block;
+                        font-size:80%;
+                    }
+                    #allAnnots li{
+                     display: block;
+  margin: 0;
+  padding: 4px;
+  width: 120px;
+  background-color: #333;
+  color: #888;
+                    }
+                     #commentList li{
+                     display: block;
+  margin: 0;
+  padding: 4px;
+  width: 120px;
+  background-color: #333;
+  color: #888;
+                    }
+                    #commentController{
+                        position:absolute;
+                        width:20%;
+                        right:20px;
+                        z-index:50;
+                        bottom:0;
+                        background-color:white;
+                    }
+                    #arrow{
+                        float:right;
+                    }
+                    .annotLayer {
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        right: 0;
+                        bottom: 0;
+                        color: #000;
+                        z-index:1;
                     }
