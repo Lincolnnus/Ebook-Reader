@@ -94,6 +94,7 @@
                     {
                         font-size:80%;
                     }
+
                     #savefileWrapper {
                         background-color: white;
                         border: 1px solid #6B7B95;
@@ -133,6 +134,19 @@
                         top:20%;
                         z-index:200;
                     }
+                    #shareWrapper {
+                        background-color: white;
+                        border: 1px solid #6B7B95;
+                        color: #000;
+                        float: left;
+                        height: 30%;
+                        padding: 10px;
+                        width: 30%;
+                        position:absolute;
+                        left:30%;
+                        top:20%;
+                        z-index:200;
+                    }
                      #editWrapper {
                         background-color: white;
                         border: 1px solid #6B7B95;
@@ -157,9 +171,6 @@
                         left:10%;
                         top:10%;
                         z-index:2;
-                    }
-                    #social{
-                        float:right;
                     }
                     #pencil{
                          background-image:url("images/pencil.svg");
@@ -192,6 +203,9 @@
                         float:right;
                         height:25px;
                     }
+                    .colorButton{
+                     width:'20px';
+                    }
                     #commentController
                     {
                        background-color:white;
@@ -203,7 +217,7 @@
                         position:absolute;
                     }
                     .bookmeta{
-                        position:relative;
+                        position:absolute;
                         width:30%;
                     }
                     .selected{
@@ -224,19 +238,43 @@
                     }
                     #socialController{
                         position:absolute;
-                        top:20%;
-                        height:80%;
+                        top:30%;
+                        height:70%;
                         z-index:50;
                         background-color:white;
+                        overflow:scroll;
                     }
-                    #allAnnots{
+                    #search{
+                        z-index:52;
+                    }
+                     #annotController{
+                        position:absolute;
+                        top:32px;
+                        width:133px;
+                        z-index:51;
+                        background-color:white;
+                    }
+                    #pageAnnots{
                         width:100px;
                     }
                     #social{
-                        z-index:50;
+                        position:absolute;
+                        left:135px;
+                        z-index:51;
                         width:5px;
                         background-color:grey;
-                        height:100%;
+                        height:70%;
+                        top:30%;
+                    }
+                     #annotTrigger{
+                        z-index:51;
+                        height:5px;
+                        background-color:grey;
+                        width:100%;
+                        float:buttom;
+                    }
+                    #allAnnots{
+                        width:133px;
                     }
                     #toolController{
                         position:absolute;
@@ -258,6 +296,14 @@
                     #bookdetail li {
                         display: block;
                         font-size:80%;
+                    }
+                    #pageAnnots li{
+                     display: block;
+  margin: 0;
+  padding: 4px;
+  width: 120px;
+  background-color: #333;
+  color: #888;
                     }
                     #allAnnots li{
                      display: block;

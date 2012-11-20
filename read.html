@@ -26,9 +26,11 @@
                                     errorShow();
                                     readShow();
                                     commentHide();
+                                    getAllAnnots();
                                     hideTools();
                                     getBook();
                                     dragController();
+                                    checkFilter();
                                     });
 
                 </script>
@@ -179,7 +181,6 @@
                                 </div>
                     </fieldset>
                 </div>
-                
                 <!-- <div id="errorWrapper" hidden='true'>
                  <div id="errorMessageLeft">
                  <span id="errorMessage"></span>
@@ -211,8 +212,20 @@
         </div> <!-- outerContainer -->
        <!-- <div id="printContainer"></div>-->
         <div id="socialController">
-            <div id="social"></div>
+            <div><input type="text" id="search" placeholder="Filter..."></div>
             <div id="allAnnots">
+                <div id="allMyAnnots" class="annotindex">
+                </div>
+                <div id="allFriendAnnots" class="annotindex">
+                </div>
+                <div id="allPublicAnnots" class="annotindex">
+                </div>
+            </div>
+        </div>
+        <div id="social"></div>
+        <div id="annotController">
+            <div id="pageAnnots">
+                Current Page
                 <div id="mine" class="annotindex">
                 </div>
                 <div id="friend" class="annotindex">
@@ -220,6 +233,7 @@
                 <div id="public" class="annotindex">
                 </div>
             </div>
+            <div id="annotTrigger"></div>
         </div>
         <div id="footer">
             <div id="toolController">
@@ -235,7 +249,8 @@
                 <textarea id="commentText" rows="4"></textarea>
                 <br>
                 <select id="access"><option value="public">Public</option><option value="friends">Friends</option><option value="me">Only Me</option></select>
-                <button id="save">Save</button><button id="delete">Delete</button>
+                <button id="save">Save</button><button id="delete">Delete</button><br>
+                <input type='checkbox' checked="true" name="fbshare" id="fbshare" value="fbshare"><img src="css/images/share_facebook.png">
             </div>
             <ul id="commentList"></ul>
         </div>

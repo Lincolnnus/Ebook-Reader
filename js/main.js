@@ -1,6 +1,5 @@
 var IP="api";
-var thumbnailurl="pdfimage/";
-var pdfurl="pdf";
+var thumbnailurl="http://dbgpu.d1.comp.nus.edu.sg/shao/pdfimage/";
 var readurl="read.html";
 //below are functions for public.html and index.html
 function gotoAccount()//Go to Personal Library Page
@@ -37,6 +36,7 @@ function libraryShow()//Get the uploaded books
         $('login').hide();
         loginHide();
         getUploadBooks();
+       // getReadBooks();
     }
     else {
         $('upload').hide();
@@ -136,7 +136,60 @@ function errorHide()//Hide the Error Wrapper
 {
     $('errorWrapper').hide();
 }
-
+function getReadBooks()//Get Upload Books
+{
+    var uid=getCookie('uid');
+    var token=getCookie('token');
+    var jsonRequest = new Request.JSON({url: 'api/read.php', onSuccess: function(upload){
+                                       for(var i=0;i<upload.length;i++)
+                                       {
+                                       var book=upload[i];
+                                       // Creating an new anchor with an Object
+                                       var wid=window.innerWidth;
+                                       var hei=window.innerHeight;
+                                       if(i%4==0){var newLine=new Element('li').inject($('books'));
+                                       newshelf=new Element('ul',{styles:{'background-image':'url(css/images/book_shelf.png)','z-index':'-1','background-size':wid*0.9+'px '+hei/4+'px','width':wid*0.9,'height':hei/4,'display':'block','background-repeat':'no-repeat'}}).inject(newLine);}
+                                       var book=upload[i];
+                                       var newbook = new Element('li', {
+                                                                 id:i,
+                                                                 'class': 'bookmeta',
+                                                                 html:'',
+                                                                 styles: {
+                                                                 'background-image':'url('+thumbnailurl+book.cover_url+')',
+                                                                 'background-size':wid/7+'px '+hei/5+'px',
+                                                                 'background-repeat':'no-repeat',
+                                                                 'width':wid/7,
+                                                                 'height':hei/5,
+                                                                 'display': 'block',
+                                                                 'left':wid*0.15+(i%4)*wid/5,
+                                                                 'top':(Math.floor(i/4))*hei/4+hei*0.1,
+                                                                 },
+                                                                 events: {
+                                                                 click: function(){
+                                                                 setCookie("bid",upload[this.id].bid);
+                                                                 window.location=readurl;
+                                                                 },
+                                                                 mouseover: function(e){
+                                                                 e.stop(e);
+                                                                 $('booktitle').set('html','Title:'+upload[this.id].title);
+                                                                 $('bookauthor').set('html','Author:'+upload[this.id].author);
+                                                                 $('bookdetail').show();
+                                                                 $('bookdetail').setStyles({
+                                                                                           'width':this.style.width*0.8,
+                                                                                           'height':this.style.height,
+                                                                                           'left':e.event.clientX,
+                                                                                           'top':e.event.clientY
+                                                                                           });
+                                                                 },
+                                                                 mouseleave:function()
+                                                                 {
+                                                                 bookDetailHide();
+                                                                 }
+                                                                 }
+                                                                 }).inject($("books"));
+                                       }
+                                       }}).get({'uid': uid, 'token': token});
+}
 function getUploadBooks()//Get Upload Books
 {
     var uid=getCookie('uid');
@@ -162,8 +215,8 @@ function getUploadBooks()//Get Upload Books
                                                                  'width':wid/7,
                                                                  'height':hei/5,
                                                                  'display': 'block',
-                                                                 'left':(i%4)*wid/4,
-                                                                 'top':Math.floor(i/4)*hei/2+10,
+                                                                 'left':wid*0.15+(i%4)*wid/5,
+                                                                 'top':(Math.floor(i/4))*hei/4+hei*0.1,
                                                                  },
                                                                  events: {
                                                                  click: function(){
@@ -215,8 +268,8 @@ function getStoreBooks()//Get Public Books
                                                                  'width':wid/7,
                                                                  'height':hei/5,
                                                                  'display': 'block',
-                                                                 'left':(i%4)*wid/4,
-                                                                 'top':Math.floor(i/4)*hei/2+10,
+                                                                 'left':wid*0.15+(i%4)*wid/5,
+                                                                 'top':(Math.floor(i/4))*hei/4+hei*0.1,
                                                                  },
                                                                  events: {
                                                                  click: function(){
@@ -382,7 +435,7 @@ function addFriend()//Add the User as a friend
                                                var thumbnail=getCookie('thumbnail');
                                                var uname=getCookie('uname');
                                                if(e.response_type=='succeed')
-                                               {  var newFriend=new Element('img',{'width':'50px','src':thumbnail,'title':uname,'onclick':'gotoUser('+uid+')'}).inject($('friends'));}
+                                               {  var newFriend=new Element('img',{'width':'50px','src':thumbnail,'title':uname,'onclick':'gotoUser('+uid+')'}).inject($('follower'));}
                                                else {showError(e.response_message);}
                                                }
                                                }).post({'fid1':fid1,'fid2':fid2});
@@ -404,8 +457,10 @@ function displayFriends()
 {
     var uid=getParameterByName('uid');
     var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
-                                       var friends=e;
-                                       showUserFriends(friends);
+                                       var follower=e.follower;
+                                       var following=e.following;
+                                       showFollower(follower);
+                                       showFollowing(following);
                                        }}).get({'uid':uid});
 }
 //Diaplay my friends
@@ -413,16 +468,25 @@ function displayMyFriends()
 {
     var uid=getCookie('uid');
     var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
-                                       var friends=e;
-                                       showUserFriends(friends);
+                                       var follower=e.follower;
+                                       var following=e.following;
+                                       showFollower(follower);
+                                       showFollowing(following);
                                        }}).get({'uid':uid});
 }
 //Show the User Friends in the User Page
-function showUserFriends(friends)
+function showFollower(friends)
 {
     for(var i=0;i<friends.length;i++)
     {
-        var newFriend=new Element('img',{'width':'50px','src':friends[i].thumbnail,'title':friends[i].uname,'onclick':'gotoUser('+friends[i].uid+')'}).inject($('friends'));
+        var newFriend=new Element('img',{'width':'50px','src':friends[i].thumbnail,'title':friends[i].uname,'onclick':'gotoUser('+friends[i].uid+')'}).inject($('follower'));
+    }
+}
+function showFollowing(friends)
+{
+    for(var i=0;i<friends.length;i++)
+    {
+        var newFriend=new Element('img',{'width':'50px','src':friends[i].thumbnail,'title':friends[i].uname,'onclick':'gotoUser('+friends[i].uid+')'}).inject($('following'));
     }
 }
 var color="blue";
@@ -438,9 +502,135 @@ function getSelected()//get selected text
     }
     return false;
 }
-function getAnnot()//get annotations
+var annotsAll=new Array();
+function getAllAnnots()//get annotations
 {
-    var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){annots=e;}}).get({'bid': bid});
+    var bid=getCookie('bid');
+    var jsonRequest = new Request.JSON({url: 'api/annotation.php', onSuccess: function(e){annotsAll=e;
+                                       if(checkCookie('uid')!="")
+                                       {
+                                       showMineAll();
+                                       var uid=getCookie('uid');
+                                       var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
+                                                                          var friends=e.following;
+                                                                          showFriendsAll(friends);
+                                                                          }}).get({'uid':uid});
+                                       }else{showPublicAll();}
+                                       }}).get({'bid': bid});
+}
+function showMineAll()
+{
+    var uid=getCookie('uid');
+    var thumbnail=getCookie('thumbnail');
+    var uname=getCookie('uname');
+    $('allMyAnnots').set('html','<img src="'+thumbnail+'" width="50px" id="myPic" title="'+uname+'">');
+    for(var i=0;i<annotsAll.length;i++)
+    {
+        if((annotsAll[i].uid==uid)&&(annotsAll[i].status==0))
+        {
+            var list=new Element('li',{id:i+'annots',html:">"+annotsAll[i].text.substring(0,9)}).inject($('allMyAnnots'));
+            list.addEvent('click',function(e){e.stop();editAnnot(this.id);});
+            list.set('morph', {duration: 200});
+            list.addEvents({
+                           mouseenter: function(e){
+                           // this refers to the element in an event
+                           this.morph({
+                                      'background-color': '#666',
+                                      'color': '#FF8',
+                                      'margin-left': 5
+                                      });
+                           e.stop();
+                           //showThisAnnot(this.id);
+                           },
+                           mouseleave: function(){
+                           // this refers to the element in an event
+                           this.morph({
+                                      'background-color': '#333',
+                                      'color': '#888',
+                                      'margin-left': 0
+                                      });
+                           }
+                           });
+        }
+        
+    }
+}
+function showFriendsAll(friends)
+{
+    $("friend").set('html','Friends');
+    for(var j=0;j<friends.length;j++)
+    {
+        var newannot=new Element('ul',{'class':'friendList',html:'<img width="30px" src="'+friends[j].thumbnail+'" title="'+friends[j].uname+'">'}).inject($("allFriendAnnots"));
+        for(var i=0;i<annotsAll.length;i++)
+        {
+            if ((annotsAll[i].uid==friends[j].uid)&&(annotsAll[i].access!='me'))
+            {
+                var list=new Element('li',{id:i+'annots',html:">"+annotsAll[i].text.substring(0,9)}).inject(newannot);
+                list.addEvent('click',function(e){});
+                list.set('morph', {duration: 200});
+                list.addEvents({
+                               mouseenter: function(e){
+                               // this refers to the element in an event
+                               this.morph({
+                                          'background-color': '#666',
+                                          'color': '#FF8',
+                                          'margin-left': 5
+                                          });
+                               e.stop();
+                               },
+                               mouseleave: function(){
+                               // this refers to the element in an event
+                               this.morph({
+                                          'background-color': '#333',
+                                          'color': '#888',
+                                          'margin-left': 0
+                                          });
+                               },
+                               click:function()
+                               {
+                               }
+                               });
+                break;
+            }
+        }
+    }
+
+}
+function showPublicAll()
+{
+    $('allPublicAnnots').set('html','Public');
+    for(var i=0;i<annotsAll.length;i++)
+    {
+        if((annotsAll[i].access=='public')&&(annotsAll[i].status==0))
+        {
+            if((!checkCookie('uid'))||(annotsAll[i].uid!=getCookie('uid')))
+            {
+                var newlist=new Element('li',{id:i+'annots',html:'>'+annotsAll[i].text.substring(0,15)}).inject($('allPublicAnnots'));
+                newlist.set('morph', {duration: 200});
+                newlist.addEvents({
+                               mouseenter: function(){
+                               // this refers to the element in an event
+                               this.morph({
+                                          'background-color': '#666',
+                                          'color': '#FF8',
+                                          'margin-left': 5
+                                          });
+                               },
+                               mouseleave: function(){
+                               // this refers to the element in an event
+                               this.morph({
+                                          'background-color': '#333',
+                                          'color': '#888',
+                                          'margin-left': 0
+                                          });
+                               },
+                               click:function(){
+                               }
+                               });
+            }
+        }
+        
+    }
 }
 var annotPage=null;//The page that the annotations has already shown
 //displayAnnotation
@@ -461,7 +651,7 @@ function displayAnnot(currentPage)
                                            showMine();
                                            var uid=getCookie('uid');
                                            var jsonRequest = new Request.JSON({url: 'api/friend.php', onSuccess: function(e){
-                                                                              var friends=e;
+                                                                              var friends=e.following;
                                                                               showFriends(friends);
                                                                               }}).get({'uid':uid});
                                            }
@@ -596,11 +786,25 @@ function shareText(annot,pageY){
                                                           var jsonRequest = new Request.JSON({url: 'api/comment.php', onSuccess: function(e){
                                                                                              showThisAnnot(annots.length-1);
                                                                                              showMine();
+                                                                                             if($('fbshare').checked){shareToFacebook(bid,annot.text)};
                                                                                              }}).post({'uid': uid, 'token': token,'bid':bid,'pid':pid,'aid':aid,'cid':cid,'text':text,'operation':'create'});
                                                           }}).post({'uid': uid, 'token': token,'annot':annot,'operation':'create'});
                        }else {loginShow();}
                        editMode=0;
                        });
+}
+function shareToFacebook(bid,text)
+{
+    var app_id=239586922749187;
+    var link='https://dbgpu.d1.comp.nus.edu.sg/shao/read.html?bid='+bid;
+    var redirect_uri='https://dbgpu.d1.comp.nus.edu.sg/shao/read.html';
+    var name=getCookie('title');
+    var caption=getCookie('author');
+    var description=text.substring(0,128);
+    var picture=getCookie('cover');
+    var href='https://www.facebook.com/dialog/feed?app_id='+app_id+'&link='+link+'&picture='+picture+'&name='+name+'&caption='+caption+'&description='+description+'&redirect_uri='+redirect_uri;
+    href=encodeURI(href);
+    window.location.href=href;
 }
 //Edit Annotation
 function editAnnot(id)
@@ -803,6 +1007,7 @@ function showThisAnnot(id)
                                                           var pid=annot.pid;
                                                           var jsonRequest = new Request.JSON({url: 'api/comment.php', onSuccess: function(e){
                                                                                              showThisAnnot(id);
+                                                                                             if($('fbshare').checked){shareToFacebook(bid,text)};
                                                                                               }}).post({'uid': uid, 'token': token,'bid':bid,'pid':pid,'aid':aid,'cid':cid,'text':text,'operation':'create'});
                                                           }else {loginShow();}
                                                           editMode=0;
@@ -816,7 +1021,7 @@ function showFriends(friends)
     $("friend").set('html','Friends');
     for(var j=0;j<friends.length;j++)
     {
-        var newannot=new Element('ul',{'class':'friendList',html:'<img width="40px" src="'+friends[j].thumbnail+'" title="'+friends[j].uname+'">'}).inject($("friend"));
+        var newannot=new Element('ul',{'class':'friendList',html:'<img width="30px" src="'+friends[j].thumbnail+'" title="'+friends[j].uname+'">'}).inject($("friend"));
         for(var i=0;i<annots.length;i++)
         {
             if ((annots[i].uid==friends[j].uid)&&(annots[i].access!='me'))
@@ -865,7 +1070,7 @@ function showPublic()
         {
             if(!(checkCookie('uid')&&(annots[i].uid==getCookie('uid'))))
             {
-                var list=new Element('li',{id:i,'class':'publicList',html:'>'+annots[i].text.substring(0,5)}).inject($("public"));
+                var list=new Element('li',{id:i,'class':'publicList',html:'>'+annots[i].text.substring(0,12)}).inject($("public"));
                 list.set('morph', {duration: 200});
                 list.addEvents({
                                mouseenter: function(){
@@ -926,42 +1131,66 @@ function hideTools()
 //Get the Book Directory in the Server
 function getBook()
 {
-    var bid = getCookie("bid");
+    var bid;
+    if(getParameterByName('bid')) {bid=getParameterByName('bid'); setCookie('bid',bid);}
+    bid= getCookie('bid');
     if(bid==""){window.location="public.html?error=no book selected";}
     else{
         PDFView.initialize();
         var jsonRequest = new Request.JSON({url: 'api/book.php',
                                            onSuccess: function(e){
                                            PDFView.open(e.file, 0);
+                                           setCookie('cover',e.cover);
+                                           setCookie('title',e.title);
+                                           setCookie('author',e.author);
                                            }}).get({'bid': bid});
     }
 }
 var commentDrag;
+var annotSlide;
 //Make The Social Controller and Comment Controller Draggable
 function dragController()
 {
-    var socialDrag = new Drag('socialController');
+    var socialSlide = new Fx.Slide('allAnnots', {mode: 'horizontal'});
+    $('social').addEvent('click', function(event){
+                         event.stop();
+                         socialSlide.toggle();
+                         if(this.getStyle('left')=='135px')
+                         {this.tween('left',[135,2]);$('search').hide();}
+                         else {this.tween('left',[2,135]);$('search').show();}
+                         });
+    $('allAnnots').addEvent('click', function(event){
+                         event.stop();
+                         socialSlide.toggle();
+                            if($('social').getStyle('left')=='135px')
+                            {$('social').tween('left',[135,2]);$('search').hide();}
+                            else {$('social').tween('left',[2,135]);$('search').show();}
+                         });
+    var annotDrag = new Drag('annotController');
     $('socialController').tween('opacity', [0,1]);
     commentDrag = new Drag('commentController');
     $('commentText').addEvent('click', function(){
                               editMode=1;
                               commentDrag.detach();
                               });
-    
-    var socialSlide = new Fx.Slide('allAnnots', {mode: 'horizontal'});
-    $('social').addEvent('mouseenter', function(event){
+    annotSlide = new Fx.Slide('pageAnnots').toggle();
+    $('annotTrigger').addEvent('mouseenter', function(event){
                          event.stop();
-                         socialSlide.toggle();
+                         annotSlide.toggle();
                          });
-    $('socialController').addEvent('click', function(event){
-                         event.stop();
-                         socialSlide.toggle();
-                         });
+    $('annotController').addEvent('click', function(event){
+                                   event.stop();
+                                   annotSlide.toggle();
+                                   });
+}
+function filter()
+{
 }
 //Choose Color
 function pickcolor()
 {
     var toolController=$("toolController");
+    document.getElements(".colorButton").destroy();
     var colorContainer=new Element('div').inject(toolController);
     var blackColor=new Element('img',{'class':'colorButton','title':'black',
                                'styles':{'background-color':'black'},
@@ -1033,6 +1262,7 @@ function saveAnnot(annot,top)
                                                           annots.push(annot);
                                                           editAnnot(annots.length-1);
                                                           showMine();
+                                                          if($('fbshare').checked){shareToFacebook(bid,annot.text)};
                                                           }}).post({'uid': uid, 'token': token,'annot':annot,'operation':'create'});
                        }else {loginShow();}
                        editMode=0;
@@ -1142,6 +1372,15 @@ function drawShape(type)
                                 });
             break;
     }
+}
+function checkFilter()
+{
+    $('search').addEvent('keydown',function() {
+                         if (event.keyCode == 13) {
+                         showError('Filter '+this.value+' Coming Soon');
+                         return false;
+                         }
+                         });
 }
 //above are functions for read.html
 function getParameterByName(name)

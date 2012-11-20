@@ -6,9 +6,10 @@
     define("PEAR_PATH","/usr/share/pear");
     define("SERVER_PATH","/shao");
     define("SERVER_URL","https://dbgpu.d1.comp.nus.edu.sg/shao");
+    define("DATASERVER_URL","http://dbgpu.d1.comp.nus.edu.sg/shao");
     define("errorurl","https://dbgpu.d1.comp.nus.edu.sg/shao/index.html");
     define("saveurl","https://dbgpu.d1.comp.nus.edu.sg/shao/index.html");
     define("successurl","https://dbgpu.d1.comp.nus.edu.sg/shao/read.html");
-    define("pdfDirectory","../pdf/");
-    define("thumbDirectory","../pdfimage/");
+    define("pdfDirectory","/var/www/httpdocs/shao/pdf/");
+    define("thumbDirectory","/var/www/httpdocs/shao/pdfimage/");
 ?>

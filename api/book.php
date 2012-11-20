@@ -13,7 +13,7 @@
             }else
             {
                 $row=mysql_fetch_assoc($result);
-                echo json_encode(array('file'=>SERVER_URL.'/pdf/'.$row["file_name"]));
+                echo json_encode(array('file'=>DATASERVER_URL.'/pdf/'.$row["file_name"],'cover'=>DATASERVER_URL.'/pdfimage/'.$row['cover_url'],'title'=>$row['title'],'author'=>$row['author']));
             }//successfully get upload information
             break;
     }

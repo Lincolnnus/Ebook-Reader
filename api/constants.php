@@ -6,6 +6,7 @@
     define("PEAR_PATH","/usr/local/share/pear");
     define("SERVER_PATH","/viewer");
     define("SERVER_URL","http://localhost/viewer");
+    define("DATASERVER_URL","http://localhost/viewer");
     define("errorurl","http://localhost/viewer/index.html");
     define("saveurl","http://localhost/viewer/index.html");
     define("successurl","http://localhost/viewer/read.html");
